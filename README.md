@@ -1,8 +1,6 @@
-## 🌌 **daedalOS** 🌌
+## **yassinOS**
 
-## _Desktop environment in the browser_
-
-![Screenshot](https://raw.githubusercontent.com/DustinBrett/daedalOS/refs/heads/main/public/screenshot.png?raw=true)
+## _Desktop environment in the browser_ based off of Dustin Brett's daedalOS
 
 ### Feature Overview
 
