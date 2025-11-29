@@ -13,6 +13,8 @@ declare global {
   }
 }
 
+type MatrixConfigType = typeof matrixConfig;
+
 const Matrix = async (
   el?: HTMLElement | null,
   config: WallpaperConfig = {} as WallpaperConfig
@@ -28,7 +30,19 @@ const Matrix = async (
 
   await loadFiles(libs, undefined, undefined, true);
 
-  await window.Matrix?.(canvas, { ...matrixConfig, ...config });
+  const overrides = { ...(config as Partial<MatrixConfigType>) };
+
+  if (typeof overrides.backgroundColor === "string") {
+    overrides.backgroundColor = {
+      space: "rgb",
+      values: [0, 0, 0],
+    };
+  }
+
+  await window.Matrix?.(canvas, {
+    ...matrixConfig,
+    ...overrides,
+  } as MatrixConfigType);
 };
 
 export default Matrix;
