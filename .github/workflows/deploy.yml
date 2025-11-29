@@ -1,0 +1,22 @@
+name: deploy-os
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: self-hosted   # uses self-hosted runner on webvm
+
+    steps:
+      - name: Deploy yassinOS to webvm
+        run: |
+          # Update code on the server
+          cd /opt/sites/yassinOS
+          git pull
+
+          # Rebuild and restart only the os service
+          cd /opt/sites
+          docker compose build os
+          docker compose up -d os
