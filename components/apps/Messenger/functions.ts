@@ -140,9 +140,14 @@ export const decryptMessage = async (
 
   try {
     const recipientPubKey = toHexKey(pubkey);
-    const message = await (canUseNip07ForDms()
-      ? window.nostr?.nip04.decrypt(recipientPubKey, content)
-      : nip04.decrypt(toHexKey(getPrivateKey()), recipientPubKey, content));
+    const message =
+      (await (canUseNip07ForDms()
+        ? window.nostr?.nip04.decrypt(recipientPubKey, content)
+        : nip04.decrypt(
+            toHexKey(getPrivateKey()),
+            recipientPubKey,
+            content
+          ))) || "";
 
     decryptedContent[id] = message;
 
