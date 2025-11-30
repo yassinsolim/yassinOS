@@ -36,6 +36,11 @@ import { type MenuItem } from "contexts/menu/useMenuContextState";
 import { MILLISECONDS_IN_DAY, MILLISECONDS_IN_SECOND } from "utils/constants";
 import { toSorted } from "utils/functions";
 
+const canUseNip07ForDms = (): boolean =>
+  Boolean(
+    window.nostr?.getPublicKey && window.nostr?.signEvent && window.nostr?.nip04
+  );
+
 export const getRelayUrls = async (): Promise<string[]> => {
   if (window.nostr?.getRelays) {
     try {
@@ -85,15 +90,18 @@ export const getPrivateKey = (): string =>
 
 export const maybeGetExistingPublicKey = async (): Promise<string> => {
   const idbKey = localStorage.getItem(PUBLIC_KEY_IDB_NAME) || "";
-  let publicKey = "";
 
-  try {
-    publicKey = (await window.nostr?.getPublicKey()) || "";
-  } catch {
-    // Ignore failure to get public key
+  if (canUseNip07ForDms()) {
+    try {
+      const publicKey = await window.nostr?.getPublicKey();
+
+      if (publicKey) return publicKey;
+    } catch {
+      // Ignore failure to get public key
+    }
   }
 
-  return publicKey || idbKey || "";
+  return idbKey || "";
 };
 
 export const getPublicHexKey = (existingPublicKey?: string): string => {
@@ -128,9 +136,10 @@ export const decryptMessage = async (
   decryptedContent[id] = content;
 
   try {
-    const message = await (window.nostr?.nip04
-      ? window.nostr.nip04.decrypt(pubkey, content)
-      : nip04.decrypt(toHexKey(getPrivateKey()), pubkey, content));
+    const recipientPubKey = toHexKey(pubkey);
+    const message = await (canUseNip07ForDms()
+      ? window.nostr?.nip04.decrypt(recipientPubKey, content)
+      : nip04.decrypt(toHexKey(getPrivateKey()), recipientPubKey, content));
 
     decryptedContent[id] = message;
 
@@ -147,9 +156,11 @@ const encryptMessage = async (
   pubkey: string
 ): Promise<string> => {
   try {
-    return await (window.nostr?.nip04
-      ? window.nostr.nip04.encrypt(pubkey, content)
-      : nip04.encrypt(toHexKey(getPrivateKey()), pubkey, content));
+    const recipientPubKey = toHexKey(pubkey);
+
+    return await (canUseNip07ForDms()
+      ? window.nostr?.nip04.encrypt(recipientPubKey, content)
+      : nip04.encrypt(toHexKey(getPrivateKey()), recipientPubKey, content));
   } catch {
     // Ignore failure to decrypt
   }
@@ -229,15 +240,16 @@ export const copyKeyMenuItems = (
 ];
 
 const signEvent = async (event: Event): Promise<Event> => {
+  const useExtension = canUseNip07ForDms();
   let signedEvent = event as VerifiedEvent;
 
-  signedEvent.pubkey = window.nostr?.getPublicKey
-    ? await window.nostr.getPublicKey()
+  signedEvent.pubkey = useExtension
+    ? await window.nostr?.getPublicKey()
     : getPublicKey(getPrivateKey());
   signedEvent.id = getEventHash(event);
 
-  if (window.nostr?.signEvent) {
-    signedEvent = (await window.nostr.signEvent(signedEvent)) as VerifiedEvent;
+  if (useExtension) {
+    signedEvent = (await window.nostr?.signEvent(signedEvent)) as VerifiedEvent;
   } else {
     signedEvent.sig = getSignature(signedEvent, toHexKey(getPrivateKey()));
   }
