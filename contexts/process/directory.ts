@@ -208,6 +208,16 @@ const directory: Processes = {
     icon: "/System/Icons/photos.webp",
     title: "Photos",
   },
+  Portfolio: {
+    Component: dynamic(() => import("components/apps/Portfolio")),
+    backgroundColor: "#0c1428",
+    defaultSize: {
+      height: 620,
+      width: 820,
+    },
+    icon: "/System/Icons/portfolio.png",
+    title: "portfolio.exe",
+  },
   Properties: {
     Component: dynamic(() => import("components/system/Dialogs/Properties")),
     allowResizing: false,

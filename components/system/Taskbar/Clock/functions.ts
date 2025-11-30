@@ -15,7 +15,6 @@ const timeFormatter = new Intl.DateTimeFormat(DEFAULT_LOCALE, {
   hour: "numeric",
   hour12: true,
   minute: "2-digit",
-  second: "2-digit",
 });
 
 const dayFormatter = new Intl.DateTimeFormat(DEFAULT_LOCALE, {

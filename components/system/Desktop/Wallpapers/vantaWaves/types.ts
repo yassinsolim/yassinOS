@@ -8,6 +8,7 @@ type VantaWavesCycleColor = {
 };
 
 export type VantaWavesConfig = VantaWavesCycleColor & {
+  backgroundColor?: string;
   camera: {
     far: number;
     fov: number;
