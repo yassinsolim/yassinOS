@@ -166,9 +166,16 @@ const encryptMessage = async (
   try {
     const recipientPubKey = toHexKey(pubkey);
 
-    return await (canUseNip07ForDms()
-      ? window.nostr?.nip04.encrypt(recipientPubKey, content)
-      : nip04.encrypt(toHexKey(getPrivateKey()), recipientPubKey, content));
+    const encrypted =
+      (await (canUseNip07ForDms()
+        ? window.nostr?.nip04.encrypt(recipientPubKey, content)
+        : nip04.encrypt(
+            toHexKey(getPrivateKey()),
+            recipientPubKey,
+            content
+          ))) || "";
+
+    return encrypted;
   } catch {
     // Ignore failure to decrypt
   }
