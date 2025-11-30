@@ -257,9 +257,10 @@ export const copyKeyMenuItems = (
 const signEvent = async (event: Event): Promise<Event> => {
   const useExtension = canUseNip07ForDms();
   let signedEvent = event as VerifiedEvent;
-  const extensionPubKey = useExtension
-    ? await window.nostr?.getPublicKey()
-    : "";
+  const extensionPubKey: string =
+    useExtension && window.nostr?.getPublicKey
+      ? await window.nostr.getPublicKey()
+      : "";
 
   signedEvent.pubkey = extensionPubKey || getPublicKey(getPrivateKey());
   signedEvent.id = getEventHash(event);
