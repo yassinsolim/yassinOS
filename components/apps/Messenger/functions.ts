@@ -39,9 +39,9 @@ import { toSorted } from "utils/functions";
 const canUseNip07ForDms = (): boolean => {
   if (typeof window === "undefined") return false;
 
-  const {nostr} = window;
+  const { nostr } = window;
 
-  return Boolean(nostr?.getPublicKey && nostr.signEvent && nostr.nip04);
+  return Boolean(nostr?.getPublicKey && nostr.nip04);
 };
 
 export const getRelayUrls = async (): Promise<string[]> => {
