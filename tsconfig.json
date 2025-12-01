@@ -19,7 +19,7 @@
     "skipLibCheck": true,
     "strict": true,
     "target": "esnext",
-    "types": ["jest", "wicg-file-system-access"]
+    "types": ["jest"]
   },
   "exclude": ["node_modules"],
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"]
