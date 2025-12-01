@@ -340,15 +340,18 @@ const useFileSystemContextState = (): FileSystemContextState => {
       existingHandle?: FileSystemDirectoryHandle
     ): Promise<string> => {
       let handle: FileSystemDirectoryHandle;
+      const {showDirectoryPicker} = (window as { showDirectoryPicker?: (...args: unknown[]) => unknown });
 
       try {
         handle =
           existingHandle ??
-          (await window.showDirectoryPicker({
+          ((await (
+            showDirectoryPicker as (options: unknown) => Promise<unknown>
+          )?.({
             id: "MapDirectoryPicker",
             mode: "readwrite",
             startIn: "desktop",
-          }));
+          })) as FileSystemDirectoryHandle);
       } catch {
         // Ignore cancelling the dialog
       }

@@ -80,15 +80,19 @@ export const requestPermission = async (
   const handle = fsHandles[url];
 
   if (handle) {
-    const currentPermissions = await handle.queryPermission();
+    const fsHandle = handle as {
+      queryPermission?: () => Promise<PermissionState>;
+      requestPermission?: () => Promise<PermissionState>;
+    };
+    const currentPermissions = (await fsHandle.queryPermission?.()) ?? "prompt";
 
     if (currentPermissions === "prompt") {
-      await handle.requestPermission();
+      await fsHandle.requestPermission?.();
     } else if (currentPermissions === "granted") {
       throw new Error("Permission already granted");
     }
 
-    return handle.queryPermission();
+    return fsHandle.queryPermission ? fsHandle.queryPermission() : false;
   }
 
   return false;

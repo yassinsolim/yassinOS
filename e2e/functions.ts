@@ -463,7 +463,11 @@ export const mockSaveFilePicker = async (
 ): Promise<void> =>
   page.evaluate(
     ([downloadName]) => {
-      window.showSaveFilePicker = () => {
+      const win = window as {
+        showSaveFilePicker?: () => Promise<FileSystemFileHandle>;
+      };
+
+      win.showSaveFilePicker = () => {
         const link = document.createElement("a");
 
         link.href = "data:null;,";

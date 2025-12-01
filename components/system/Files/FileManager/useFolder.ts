@@ -315,15 +315,27 @@ const useFolder = (
           ? fileName
           : `${fileName}.zip`
         : "download.zip";
+      const saveFilePicker = (
+        window as { showSaveFilePicker?: (...args: unknown[]) => unknown }
+      ).showSaveFilePicker;
 
-      if (window.showSaveFilePicker && extension !== SHORTCUT_EXTENSION) {
+      if (saveFilePicker && extension !== SHORTCUT_EXTENSION) {
         try {
-          const filePickerHandle = await window.showSaveFilePicker({
+          const filePickerHandle = await (
+            saveFilePicker as (options: unknown) => Promise<unknown>
+          )({
             id: "SaveFilePicker",
             startIn: "desktop",
             suggestedName: name,
           });
-          const fileWriter = await filePickerHandle.createWritable();
+          const fileWriter = await (
+            filePickerHandle as {
+              createWritable: () => Promise<{
+                close: () => Promise<void> | void;
+                write: (data: BufferSource) => Promise<void> | void;
+              }>;
+            }
+          ).createWritable();
 
           await fileWriter.write(contents as BufferSource);
           await fileWriter.close();
