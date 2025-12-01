@@ -14,6 +14,7 @@ const useUrlLoader = (): void => {
   const { exists, fs, stat } = useFileSystem();
   const { open } = useProcesses();
   const loadedInitialAppRef = useRef(false);
+  const openedAppRef = useRef(false);
 
   useEffect(() => {
     if (loadedInitialAppRef.current || !fs || !exists || !open) return;
@@ -39,6 +40,7 @@ const useUrlLoader = (): void => {
       if (initialApp === "FileExplorer" && url && !urlExists) return;
 
       open(initialApp, urlExists ? { url } : undefined);
+      openedAppRef.current = true;
     };
 
     if (app) {
@@ -65,6 +67,10 @@ const useUrlLoader = (): void => {
           // Ignore error getting url
         }
       }
+    }
+
+    if (!openedAppRef.current) {
+      loadInitialApp("Portfolio");
     }
   }, [exists, fs, open, stat]);
 };
