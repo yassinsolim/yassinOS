@@ -1,0 +1,15 @@
+{
+  "names": {
+    "_": "aded6db28165d85daeeb2e097374dd3576d7a408e6030e8becc421b4f99cb59a",
+    "yassin": "aded6db28165d85daeeb2e097374dd3576d7a408e6030e8becc421b4f99cb59a"
+  },
+  "relays": {
+    "aded6db28165d85daeeb2e097374dd3576d7a408e6030e8becc421b4f99cb59a": [
+      "wss://relay.damus.io",
+      "wss://nostr.mom",
+      "wss://nos.lol",
+      "wss://relay.nostr.band",
+      "wss://relayable.org"
+    ]
+  }
+}

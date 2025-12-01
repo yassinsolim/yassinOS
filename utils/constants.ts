@@ -312,7 +312,7 @@ export const SESSION_FILE = "/session.json";
 
 export const SHORTCUT_ICON = `${ICON_PATH}/shortcut.webp`;
 
-export const FAVICON_BASE_PATH = "/favicon.ico";
+export const FAVICON_BASE_PATH = "/pfp.png";
 
 export const FOLDER_ICON = `${ICON_PATH}/folder.webp`;
 
@@ -369,12 +369,12 @@ export const DEFAULT_SCROLLBAR_WIDTH = 17;
 export const TASKBAR_HEIGHT = 30;
 
 export const PACKAGE_DATA = {
-  alias: "daedalOS",
+  alias: "yassinOS",
   author: {
-    email: "dustinbrett@gmail.com",
-    name: "Dustin Brett",
-    npub: "npub10uc7hg6wdxhhd7ee8x9c5lr9d0ux7272rv2m0mc03ds54q7quxjss02r3p",
-    url: "https://dustinbrett.com",
+    email: "solimanyassin@gmail.com",
+    name: "Yassin Soliman",
+    npub: "npub14hkkmv5pvhv9mtht9cyhxaxax4md0fqgucpsazlvcssmf7vukkdqs8lhc8",
+    url: "https://yassin.app",
   },
   description: "Desktop environment in the browser",
   license: "MIT",

@@ -15,6 +15,7 @@ const SEARCH_EXTENSIONS = require("./searchExtensions.json");
 const IGNORE_FILES = new Set([
   "desktop.ini",
   "favicon.ico",
+  "pfp.png",
   "fs.9p.json",
   "preload.json",
   "robots.txt",

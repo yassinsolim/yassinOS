@@ -26,6 +26,9 @@ export const EXCLUDED_CONSOLE_LOGS = (
     "browserContext.",
     "Web browser doesn't support Web Audio API",
     "Slow execution detected",
+    "Failed to load resource",
+    "Load failed",
+    "access control checks",
   ];
 
   if (browserName === "webkit") {
@@ -307,11 +310,11 @@ export const NEW_FOLDER_LABEL = /^New folder$/;
 export const NEW_FILE_LABEL = /^New Text Document.txt$/;
 export const NEW_FILE_LABEL_TEXT = "New Text Document.txt";
 
-export const CLOCK_REGEX = /^(1[0-2]|0?[1-9])(?::[0-5]\d){2}\s?(AM|PM)$/;
+export const CLOCK_REGEX = /^(1[0-2]|0?[1-9]):[0-5]\d\s?(AM|PM)$/;
 
-export const BASE_APP_TITLE = "daedalOS";
-export const BASE_APP_FAVICON = /^\/favicon.ico$/;
-export const BASE_APP_FAVICON_TEXT = "/favicon.ico";
+export const BASE_APP_TITLE = "yassinOS";
+export const BASE_APP_FAVICON = /^\/pfp.png$/;
+export const BASE_APP_FAVICON_TEXT = "/pfp.png";
 
 export const UNKNOWN_ICON_PATH = "/System/Icons/48x48/unknown.webp";
 
