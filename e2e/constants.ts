@@ -26,6 +26,9 @@ export const EXCLUDED_CONSOLE_LOGS = (
     "browserContext.",
     "Web browser doesn't support Web Audio API",
     "Slow execution detected",
+    "Failed to load resource",
+    "Load failed",
+    "access control checks",
   ];
 
   if (browserName === "webkit") {

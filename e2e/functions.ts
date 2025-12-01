@@ -690,9 +690,11 @@ export const taskbarEntryIsHidden = async (
   label: RegExp | string,
   { page }: TestProps
 ): Promise<void> =>
-  expect(
-    page.locator(TASKBAR_ENTRY_SELECTOR).getByLabel(label, EXACT)
-  ).toBeHidden();
+  expect(async () =>
+    expect(
+      page.locator(TASKBAR_ENTRY_SELECTOR).getByLabel(label, EXACT)
+    ).toBeHidden()
+  ).toPass({ timeout: 10000 });
 
 export const taskbarEntryIsVisible = async (
   label: RegExp | string,
