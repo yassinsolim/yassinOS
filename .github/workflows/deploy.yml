@@ -11,6 +11,8 @@ jobs:
     permissions:
       contents: read
       packages: write
+    outputs:
+      image-ref: ${{ steps.expose.outputs.image-ref }}
     env:
       IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/yassinos
     steps:
@@ -22,6 +24,7 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and push image (cached)
+        id: build
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -33,6 +36,9 @@ jobs:
           cache-to: type=gha,mode=max
           build-args: |
             NODE_OPTIONS=--openssl-legacy-provider
+      - name: Expose image reference
+        id: expose
+        run: echo "image-ref=${IMAGE_NAME}@${{ steps.build.outputs.digest }}" >> "$GITHUB_OUTPUT"
 
   deploy:
     runs-on: self-hosted # uses self-hosted runner on webvm
@@ -40,7 +46,7 @@ jobs:
     permissions:
       packages: read
     env:
-      IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/yassinos:latest
+      IMAGE_REF: ${{ needs.build-and-push.outputs.image-ref }}
     steps:
       - uses: docker/login-action@v3
         with:
@@ -49,7 +55,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Pull and restart container
         run: |
-          docker pull "$IMAGE_NAME"
+          docker pull "$IMAGE_REF"
           docker stop yassinos || true
           docker rm yassinos || true
-          docker run -d --name yassinos -p 3000:3000 "$IMAGE_NAME"
+          docker run -d --name yassinos -p 3000:3000 "$IMAGE_REF"
