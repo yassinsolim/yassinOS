@@ -9,6 +9,7 @@ import {
   importStartMenu,
 } from "components/system/Taskbar/functions";
 import Clock from "components/system/Taskbar/Clock";
+import PinnedApps from "components/system/Taskbar/PinnedApps";
 import SearchButton from "components/system/Taskbar/Search/SearchButton";
 import StartButton from "components/system/Taskbar/StartButton";
 import StyledTaskbar from "components/system/Taskbar/StyledTaskbar";
@@ -30,6 +31,7 @@ const Taskbar: FC = () => {
   const [calendarVisible, setCalendarVisible] = useState(false);
   const [aiVisible, setAIVisible] = useState(false);
   const [clockWidth, setClockWidth] = useState(CLOCK_CANVAS_BASE_WIDTH);
+  const [pinnedCount, setPinnedCount] = useState(0);
   const { aiEnabled } = useSession();
   const hasWindowAI = useWindowAI();
   const toggleStartMenu = useCallback(
@@ -75,7 +77,12 @@ const Taskbar: FC = () => {
           searchVisible={searchVisible}
           toggleSearch={toggleSearch}
         />
-        <TaskbarEntries clockWidth={clockWidth} hasAI={hasAI} />
+        <PinnedApps onChangePinnedCount={setPinnedCount} />
+        <TaskbarEntries
+          clockWidth={clockWidth}
+          hasAI={hasAI}
+          pinnedCount={pinnedCount}
+        />
         <Clock
           hasAI={hasAI}
           setClockWidth={setClockWidth}
