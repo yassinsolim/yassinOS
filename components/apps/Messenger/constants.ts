@@ -8,9 +8,9 @@ import {
 export const BASE_RW_RELAYS = [
   "wss://nos.lol",
   "wss://nostr.mom",
-  "wss://public.relaying.io",
-  "wss://relay1.nostrchat.io",
-  "wss://relayable.org",
+  "wss://nostrelites.org",
+  "wss://relay.damus.io",
+  "wss://relay.nostr.band",
 ];
 
 export const METADATA_KIND = 0;
