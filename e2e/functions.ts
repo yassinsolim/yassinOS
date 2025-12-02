@@ -1005,6 +1005,12 @@ export const selectArea = async ({
 export const loadApp =
   (queryParams?: Record<string, string>) =>
   async ({ page }: TestProps): Promise<Response | null> => {
+    await page.addInitScript(() => {
+      (
+        window as { __E2E_DISABLE_AUTOLAUNCH?: boolean }
+      ).__E2E_DISABLE_AUTOLAUNCH = true;
+    });
+
     await page.addInitScript((session) => {
       window.DEBUG_DEFAULT_SESSION = session;
     }, DEFAULT_SESSION);

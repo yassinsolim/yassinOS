@@ -10,6 +10,16 @@ const isBrowserUrl = (url: string): boolean =>
   url.startsWith("https://") ||
   url.startsWith("chrome://");
 
+const shouldSkipAutoLaunch = (): boolean =>
+  typeof window !== "undefined" &&
+  Boolean(
+    (
+      window as {
+        __E2E_DISABLE_AUTOLAUNCH?: boolean;
+      }
+    ).__E2E_DISABLE_AUTOLAUNCH
+  );
+
 const useUrlLoader = (): void => {
   const { exists, fs, stat } = useFileSystem();
   const { open } = useProcesses();
@@ -69,7 +79,7 @@ const useUrlLoader = (): void => {
       }
     }
 
-    if (!openedAppRef.current) {
+    if (!openedAppRef.current && !shouldSkipAutoLaunch()) {
       loadInitialApp("Portfolio");
     }
   }, [exists, fs, open, stat]);
