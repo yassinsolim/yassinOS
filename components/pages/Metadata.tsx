@@ -152,6 +152,7 @@ const Metadata: FC = () => {
           <link
             key={icon}
             as="image"
+            data-preload="desktop-icon"
             href={dynamicIcon || isSubIcon ? undefined : icon}
             imageSrcSet={
               dynamicIcon

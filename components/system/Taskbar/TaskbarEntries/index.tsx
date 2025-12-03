@@ -26,6 +26,7 @@ const TaskbarEntries: FC<TaskbarEntriesProps> = ({
       $clockWidth={clockWidth}
       $hasAI={hasAI}
       $pinnedCount={pinnedCount}
+      data-taskbar-entries="true"
     >
       <AnimatePresence initial={false} presenceAffectsLayout={false}>
         {Object.entries(processes)

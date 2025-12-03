@@ -17,14 +17,29 @@ const StyledPortfolio = styled.div`
   gap: 14px;
   height: 100%;
   overflow: auto;
-  padding: 18px 20px 24px;
+  padding: 18px 20px 32px;
   width: 100%;
 
+  .content {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    margin: 0 auto;
+    max-width: 1180px;
+    width: 100%;
+  }
+
   header {
-    align-items: center;
+    align-items: stretch;
     display: grid;
-    gap: 12px;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+    grid-template-columns: 1.25fr 0.85fr;
+  }
+
+  @media (width <= 960px) {
+    header {
+      grid-template-columns: 1fr;
+    }
   }
 
   h1 {
@@ -50,6 +65,12 @@ const StyledPortfolio = styled.div`
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
+    justify-content: flex-start;
+    width: 100%;
+  }
+
+  .contact-actions {
+    margin-top: 10px;
   }
 
   .pill {
@@ -74,6 +95,11 @@ const StyledPortfolio = styled.div`
       border-color: rgb(88 208 255 / 60%);
       transform: translateY(-1px);
     }
+
+    @media (width <= 560px) {
+      justify-content: center;
+      width: 100%;
+    }
   }
 
   .card {
@@ -81,7 +107,29 @@ const StyledPortfolio = styled.div`
     border: 1px solid rgb(255 255 255 / 7%);
     border-radius: 14px;
     box-shadow: 0 16px 35px rgb(0 0 0 / 30%);
-    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-height: 0;
+    overflow: hidden;
+    padding: 16px 18px;
+    width: 100%;
+  }
+
+  .hero-card {
+    gap: 10px;
+  }
+
+  .eyebrow {
+    color: #7ea2d6;
+    font-size: 12px;
+    letter-spacing: 1px;
+    margin: 0;
+    text-transform: uppercase;
+  }
+
+  .snapshot-card {
+    gap: 10px;
   }
 
   .card h3 {
@@ -96,9 +144,10 @@ const StyledPortfolio = styled.div`
   }
 
   .grid {
+    align-items: stretch;
     display: grid;
-    gap: 12px;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
   }
 
   .tech {
@@ -119,10 +168,16 @@ const StyledPortfolio = styled.div`
 
   .list {
     color: #d6deea;
-    margin: 8px 0 0 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    line-height: 1.45;
+    margin: 8px 0 0;
+    padding-left: 18px;
   }
 
   .sections {
+    align-items: start;
     display: grid;
     gap: 12px;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -136,6 +191,44 @@ const StyledPortfolio = styled.div`
     gap: 8px;
     letter-spacing: 0.15px;
     margin: 0 0 6px;
+  }
+
+  .section {
+    background: rgb(255 255 255 / 4%);
+    border: 1px solid rgb(255 255 255 / 6%);
+    border-radius: 16px;
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 6%),
+      0 10px 25px rgb(0 0 0 / 25%);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    overflow: visible;
+    padding: 16px;
+  }
+
+  .section-header {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: space-between;
+  }
+
+  .stack {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  }
+
+  @media (width <= 720px) {
+    .stack {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .grid-stack {
+    align-items: stretch;
   }
 `;
 

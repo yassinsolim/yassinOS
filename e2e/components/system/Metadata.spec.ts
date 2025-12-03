@@ -8,7 +8,9 @@ test.beforeEach(loadApp());
 
 test.describe("has correct tags", () => {
   test("has link preloads", async ({ page }) => {
-    const preloadElements = page.locator("link[rel=preload]");
+    const preloadElements = page.locator(
+      "link[rel=preload][data-preload='desktop-icon']"
+    );
 
     await expect(preloadElements).toHaveCount(desktopIcons.length);
 

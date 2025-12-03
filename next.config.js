@@ -13,6 +13,12 @@ const webpack = require("webpack");
  * @type {import("next").NextConfig}
  * */
 const nextConfig = {
+  allowedDevOrigins: [
+    "http://100.82.50.78",
+    "http://100.82.50.78:3000",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+  ],
   compiler: {
     reactRemoveProperties: isProduction,
     removeConsole: isProduction,

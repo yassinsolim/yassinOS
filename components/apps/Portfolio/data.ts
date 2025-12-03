@@ -13,31 +13,77 @@ export const contact = {
 export const projects = [
   {
     highlights: [
-      "Built a crosswalk safety prototype that links ESP32-CAM people-counting nodes with an Arduino UNO R4 hazard kiosk and an AWS-backed map dashboard.",
-      "Implemented a YOLOv8n + ByteTrack pipeline to detect and track pedestrians, publishing rolling congestion signals for real-time visibility.",
-      "Designed a joystick-driven LCD UI with nine hazard categories that streams structured events to DynamoDB and triggers SNS alerts.",
+      "Leading v3 of a telesurgery-ready robotic arm: moving from servos to steppers, TCP instead of UDP, plus safety interlocks for surgeon + patient.",
+      "Coordinating a two-Arduino UNO R4 wireless stack (controller + arm mover) that can operate room-to-room today and over sat/cell links in space.",
+      "Building the showcase site in Next.js/TypeScript/Tailwind and steering an 8-person software team through hardware iterations and QA.",
+    ],
+    name: "Waybionic",
+    tech: [
+      "Arduino",
+      "C/C++",
+      "Next.js",
+      "TailwindCSS",
+      "TCP/IP",
+      "Stepper Control",
+    ],
+    timeline: "Ongoing",
+  },
+  {
+    highlights: [
+      "ESP32-CAM + YOLOv8n people counting at crosswalks; publishes congestion to AWS and renders live radar on a Next.js dashboard.",
+      "Arduino R4 kiosk with joystick + 16x2 LCD to report hazards (potholes, ice, fallen signs) and auto-activate crosswalk LEDs.",
+      "Full stack: AWS ingest + DynamoDB/SNS, React/TS frontend, real-time map overlays, and telemetry sent from embedded nodes.",
     ],
     name: "PathGuard",
     tech: [
       "Arduino",
       "AWS",
+      "DynamoDB",
       "ESP32-CAM",
-      "Python",
-      "React",
+      "Next.js",
       "TypeScript",
       "YOLOv8",
     ],
-    timeline: "Nov 2025",
+    timeline: "HackTheChange 2025",
   },
   {
     highlights: [
-      "Built a bilingual disaster response system with victim, supplies, inquiry, and location tracking modules to increase support capacity.",
-      "Implemented Swing UI + PostgreSQL for persistent data handling and reliability.",
-      "Applied custom data models and JUnit coverage for a fully passing test suite.",
+      "Built a bilingual disaster response GUI with victim, supply, inquiry, and location tracking to coordinate responders.",
+      "Java Swing UI backed by PostgreSQL; over a dozen JUnit test cases for reliability and grading.",
+      "Supports French translations via externalized XML for accessibility.",
     ],
     name: "DisasterManagementGUI",
     tech: ["Java", "JUnit", "PostgreSQL", "Swing"],
     timeline: "Mar 2025",
+  },
+  {
+    highlights: [
+      "Community forum for newcomers to Calgary with real-time and private messaging plus a finance tracker.",
+      "Profiles with avatars/bios, posting/liking, search + filters, and JS polling for live updates.",
+      "Django + MySQL backend; JavaScript front-end for chat and dashboards.",
+    ],
+    name: "CalgaryConnect",
+    tech: ["Django", "JavaScript", "MySQL", "HTML/CSS"],
+    timeline: "CalgaryHacks 2025",
+  },
+  {
+    highlights: [
+      "MicroPython on a Pi Pico drives a two-digit NeoPixel 7-seg display showing live stock + weather data.",
+      "LCD provides secondary stats; button toggles between stock and weather modes.",
+      "API fetcher normalizes metrics for compact LED rendering.",
+    ],
+    name: "Weather-Stock-Data",
+    tech: ["MicroPython", "Raspberry Pi Pico", "NeoPixel", "REST APIs"],
+    timeline: "2024",
+  },
+  {
+    highlights: [
+      "Terminal-based Spotify data explorer that reads CSV dumps and plots BPM, energy, danceability, and more.",
+      "Compares features across tracks and visualizes distributions via CLI workflows.",
+    ],
+    name: "Spotify-Statistics",
+    tech: ["Python", "CSV", "Matplotlib"],
+    timeline: "2020 data, refreshed tooling",
   },
 ];
 
