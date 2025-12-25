@@ -730,20 +730,24 @@ const useFileSystemContextState = (): FileSystemContextState => {
 
     if (expectedMtime <= 0 && expectedSize <= 0) return;
 
-    writable.stat(resumePath, (statError: ApiError | null, stats?: Stats) => {
-      if (statError || !stats) return;
+    writable.stat(
+      resumePath,
+      false,
+      (statError: ApiError | null, stats?: Stats) => {
+        if (statError || !stats) return;
 
-      const isStale =
-        (expectedMtime > 0 &&
-          stats.mtimeMs > 0 &&
-          stats.mtimeMs < expectedMtime) ||
-        (expectedSize > 0 && stats.size >= 0 && stats.size !== expectedSize);
+        const isStale =
+          (expectedMtime > 0 &&
+            stats.mtimeMs > 0 &&
+            stats.mtimeMs < expectedMtime) ||
+          (expectedSize > 0 && stats.size >= 0 && stats.size !== expectedSize);
 
-      if (!isStale) return;
+        if (!isStale) return;
 
-      // Drop stale cached copy so the updated resume shows on the desktop.
-      writable.unlink(resumePath, () => updateFolder(DESKTOP_PATH));
-    });
+        // Drop stale cached copy so the updated resume shows on the desktop.
+        writable.unlink(resumePath, () => updateFolder(DESKTOP_PATH));
+      }
+    );
   }, [rootFs, updateFolder]);
 
   return {
