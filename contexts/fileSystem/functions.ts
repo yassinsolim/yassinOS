@@ -1,5 +1,4 @@
 import { join } from "path";
-import type XmlHttpRequest from "browserfs/dist/node/backend/XmlHttpRequest";
 import type IndexedDBFileSystem from "browserfs/dist/node/backend/IndexedDB";
 import type OverlayFS from "browserfs/dist/node/backend/OverlayFS";
 import type InMemoryFileSystem from "browserfs/dist/node/backend/InMemory";
@@ -108,12 +107,14 @@ export const resetStorage = (rootFs?: RootFileSystem): Promise<void> =>
     const clearFs = (): void => {
       const overlayFs = rootFs?._getFs("/")?.fs as OverlayFS;
       const overlayedFileSystems = overlayFs?.getOverlayedFileSystems();
-      const readable = overlayedFileSystems?.readable as XmlHttpRequest;
+      const readable = overlayedFileSystems?.readable as
+        | { empty?: () => void }
+        | undefined;
       const writable = overlayedFileSystems?.writable as
         | IndexedDBFileSystem
         | InMemoryFileSystem;
 
-      readable?.empty();
+      readable?.empty?.();
 
       if (writable?.getName() === "InMemory" || !writable?.empty) {
         resolve();
