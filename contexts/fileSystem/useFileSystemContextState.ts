@@ -6,8 +6,12 @@ import {
 } from "browserfs/dist/node/core/file_system";
 import { type ApiError } from "browserfs/dist/node/core/api_error";
 import { type FSModule } from "browserfs/dist/node/core/FS";
+import type Stats from "browserfs/dist/node/core/node_fs_stats";
 import type IZipFS from "browserfs/dist/node/backend/ZipFS";
 import type IIsoFS from "browserfs/dist/node/backend/IsoFS";
+import type IndexedDBFileSystem from "browserfs/dist/node/backend/IndexedDB";
+import type InMemoryFileSystem from "browserfs/dist/node/backend/InMemory";
+import type OverlayFS from "browserfs/dist/node/backend/OverlayFS";
 import type * as IBrowserFS from "browserfs";
 import useTransferDialog from "components/system/Dialogs/Transfer/useTransferDialog";
 import {
@@ -20,6 +24,8 @@ import {
 import { type NewPath } from "components/system/Files/FileManager/useFolder";
 import {
   getFileSystemHandles,
+  get9pModifiedTime,
+  get9pSize,
   hasIndexedDB,
   isMountedFolder,
   parseDirectory,
@@ -55,6 +61,13 @@ type FileSystemChangeRecord = {
   relativePathComponents: string[];
   relativePathMovedFrom: string[] | null;
   type: "appeared" | "disappeared" | "moved";
+};
+
+type HttpRequestFs = {
+  Create: (
+    options: { baseUrl?: string; index: ReturnType<typeof parseDirectory> },
+    cb: BFSCallback<FileSystem>
+  ) => void;
 };
 
 declare global {
@@ -313,13 +326,21 @@ const useFileSystemContextState = (): FileSystemContextState => {
       }
 
       const {
-        FileSystem: { HTTPRequest },
+        FileSystem: { HTTPRequest } = {},
       } = (await import(
         "public/System/BrowserFS/browserfs.min.js"
       )) as typeof IBrowserFS;
+      const httpRequestFs = HTTPRequest as unknown as
+        | HttpRequestFs
+        | undefined;
 
       return new Promise((resolve, reject) => {
-        HTTPRequest?.Create(
+        if (!httpRequestFs?.Create) {
+          reject(new Error("HTTPRequest FS not available."));
+          return;
+        }
+
+        httpRequestFs.Create(
           { baseUrl, index: parseDirectory(index.fsroot as FS9PV4[]) },
           (error, newFs) => {
             if (error || !newFs) {
@@ -489,7 +510,7 @@ const useFileSystemContextState = (): FileSystemContextState => {
       directory: string,
       callback: NewPath,
       accept?: string,
-      multiple = true
+      multiple: boolean = true
     ): Promise<string[]> =>
       new Promise((resolve) => {
         const fileInput = document.createElement("input");
@@ -589,8 +610,8 @@ const useFileSystemContextState = (): FileSystemContextState => {
       name: string,
       directory: string,
       buffer?: Buffer,
-      iteration = 0,
-      overwrite = false
+      iteration: number = 0,
+      overwrite: boolean = false
     ): Promise<string> => {
       if (!name.trim()) return "";
 
@@ -691,6 +712,39 @@ const useFileSystemContextState = (): FileSystemContextState => {
       restoreFsHandles();
     }
   }, [exists, mapFs, rootFs, updateFolder]);
+
+  useEffect(() => {
+    if (!rootFs) return;
+
+    const overlayFs = rootFs?._getFs?.("/")?.fs as OverlayFS | undefined;
+    const writable = overlayFs?.getOverlayedFileSystems?.()?.writable as
+      | IndexedDBFileSystem
+      | InMemoryFileSystem
+      | undefined;
+
+    if (!writable) return;
+
+    const resumePath = join(DESKTOP_PATH, "Resume.pdf");
+    const expectedMtime = get9pModifiedTime(resumePath);
+    const expectedSize = get9pSize(resumePath);
+
+    if (expectedMtime <= 0 && expectedSize <= 0) return;
+
+    writable.stat(resumePath, (statError: ApiError | null, stats?: Stats) => {
+      if (statError || !stats) return;
+
+      const isStale =
+        (expectedMtime > 0 &&
+          stats.mtimeMs > 0 &&
+          stats.mtimeMs < expectedMtime) ||
+        (expectedSize > 0 && stats.size >= 0 && stats.size !== expectedSize);
+
+      if (!isStale) return;
+
+      // Drop stale cached copy so the updated resume shows on the desktop.
+      writable.unlink(resumePath, () => updateFolder(DESKTOP_PATH));
+    });
+  }, [rootFs, updateFolder]);
 
   return {
     addFile,
