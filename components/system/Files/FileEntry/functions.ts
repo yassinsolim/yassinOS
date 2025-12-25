@@ -76,12 +76,37 @@ type VideoElementWithSeek = HTMLVideoElement & {
   seekToNextFrame: () => Promise<void>;
 };
 
-export const isExistingFile = (
-  { birthtimeMs, ctimeMs }: Stats = {} as Stats
-): boolean => Boolean(birthtimeMs && birthtimeMs === ctimeMs);
+type StatTimes = Stats & {
+  birthtimeMs?: number;
+  ctimeMs?: number;
+};
+
+export const isExistingFile = (stats: StatTimes = {} as StatTimes): boolean => {
+  const resolvedBirthtimeMs =
+    typeof stats.birthtimeMs === "number"
+      ? stats.birthtimeMs
+      : stats.birthtime instanceof Date
+        ? stats.birthtime.getTime()
+        : 0;
+  const resolvedCtimeMs =
+    typeof stats.ctimeMs === "number"
+      ? stats.ctimeMs
+      : stats.ctime instanceof Date
+        ? stats.ctime.getTime()
+        : 0;
+
+  return Boolean(
+    resolvedBirthtimeMs && resolvedBirthtimeMs === resolvedCtimeMs
+  );
+};
 
 export const getModifiedTime = (path: string, stats: FileStat): number => {
-  const { mtimeMs } = stats;
+  const mtimeMs =
+    typeof stats.mtimeMs === "number"
+      ? stats.mtimeMs
+      : stats.mtime instanceof Date
+        ? stats.mtime.getTime()
+        : 0;
 
   if (isExistingFile(stats)) {
     const storedMtime = get9pModifiedTime(path);
@@ -238,10 +263,11 @@ const getIconsFromCache = (fs: FSModule, path: string): Promise<string[]> =>
   new Promise((resolve) => {
     const iconCacheDirectory = join(ICON_CACHE, path);
 
-    fs?.readdir(iconCacheDirectory, async (dirError, possibleIcons = []) => {
+    fs?.readdir(iconCacheDirectory, async (dirError, possibleIcons) => {
       if (dirError) resolve([]);
       else {
-        const [firstIcon, ...otherIcons] = possibleIcons.filter((icon) =>
+        const iconList = possibleIcons ?? [];
+        const [firstIcon, ...otherIcons] = iconList.filter((icon) =>
           icon?.endsWith(ICON_CACHE_EXTENSION)
         );
 
@@ -563,9 +589,8 @@ export const getInfoWithExtension = (
       getInfoByFileExtension("/System/Icons/executable.webp", (signal) =>
         fs.readFile(path, async (error, contents = Buffer.from("")) => {
           if (!error && contents.length > 0 && !signal.aborted) {
-            const { extractExeIcon } = await import(
-              "components/system/Files/FileEntry/exeIcons"
-            );
+            const { extractExeIcon } =
+              await import("components/system/Files/FileEntry/exeIcons");
             const exeIcon = await extractExeIcon(contents);
 
             if (exeIcon && !signal.aborted) {

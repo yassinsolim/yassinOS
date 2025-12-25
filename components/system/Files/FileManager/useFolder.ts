@@ -179,8 +179,8 @@ const useFolder = (
           const oldName = basename(oldFile);
 
           if (newFile) {
-            setFiles((currentFiles = {}) =>
-              Object.entries(currentFiles).reduce<Files>(
+            setFiles((currentFiles) =>
+              Object.entries(currentFiles ?? {}).reduce<Files>(
                 (newFiles, [fileName, fileStats]) => {
                   // eslint-disable-next-line no-param-reassign
                   newFiles[
@@ -194,9 +194,11 @@ const useFolder = (
             );
           } else {
             blurEntry(oldName);
-            setFiles(
-              ({ [oldName]: _fileStats, ...currentFiles } = {}) => currentFiles
-            );
+            setFiles((currentFiles) => {
+              const { [oldName]: _fileStats, ...rest } = currentFiles ?? {};
+
+              return rest;
+            });
           }
         }
       } else if (newFile) {
@@ -207,10 +209,11 @@ const useFolder = (
           isSimpleSort ? await lstat(filePath) : await stat(filePath)
         );
 
-        setFiles((currentFiles = {}) => ({
-          ...currentFiles,
-          [baseName]: fileStats,
-        }));
+        setFiles((currentFiles) => {
+          const nextFiles = currentFiles ?? {};
+
+          return { ...nextFiles, [baseName]: fileStats };
+        });
       } else {
         setIsLoading(true);
 
@@ -465,9 +468,8 @@ const useFolder = (
       const filePaths = await Promise.all(
         allPaths.map((path) => getFile(path))
       );
-      const { addEntryToZippable, createZippable } = await import(
-        "utils/zipFunctions"
-      );
+      const { addEntryToZippable, createZippable } =
+        await import("utils/zipFunctions");
 
       return filePaths
         .filter(Boolean)

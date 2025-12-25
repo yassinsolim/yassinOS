@@ -70,6 +70,19 @@ type FsQueueCall = [string, unknown[]];
 
 const mockFsCallQueue: FsQueueCall[] = [];
 
+type StatWithMs = Stats & {
+  atimeMs?: number;
+  birthtimeMs?: number;
+  ctimeMs?: number;
+  mtimeMs?: number;
+};
+
+const toDate = (value?: Date, valueMs?: number): Date => {
+  if (typeof valueMs === "number") return new Date(valueMs);
+  if (value instanceof Date) return value;
+  return new Date(0);
+};
+
 const runQueuedFsCalls = (fs: FSModule): void => {
   if (mockFsCallQueue.length > 0) {
     const [name, args] = mockFsCallQueue.shift() as FsQueueCall;
@@ -181,19 +194,26 @@ const useAsyncFs = (): AsyncFSModule => {
                 : reject(error);
             }
 
-            return resolve(
-              stats.size === -1 && isExistingFile(stats)
-                ? new Stats(
-                    FileType.FILE,
-                    get9pSize(path),
-                    stats.mode,
-                    stats.atimeMs,
-                    stats.mtimeMs,
-                    stats.ctimeMs,
-                    stats.birthtimeMs
-                  )
-                : stats
-            );
+            if (stats.size === -1 && isExistingFile(stats)) {
+              const statWithMs = stats as StatWithMs;
+              const nextStats = new Stats(
+                FileType.FILE,
+                get9pSize(path),
+                stats.mode,
+                toDate(stats.atime, statWithMs.atimeMs),
+                toDate(stats.mtime, statWithMs.mtimeMs),
+                toDate(stats.ctime, statWithMs.ctimeMs)
+              );
+
+              nextStats.birthtime = toDate(
+                stats.birthtime,
+                statWithMs.birthtimeMs
+              );
+
+              return resolve(nextStats);
+            }
+
+            return resolve(stats);
           });
         }),
       unlink: (path) =>

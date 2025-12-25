@@ -325,14 +325,15 @@ const useFileSystemContextState = (): FileSystemContextState => {
         throw new Error("Invalid HTTPRequest FS object.");
       }
 
-      const {
-        FileSystem: { HTTPRequest } = {},
-      } = (await import(
-        "public/System/BrowserFS/browserfs.min.js"
-      )) as typeof IBrowserFS;
-      const httpRequestFs = HTTPRequest as unknown as
-        | HttpRequestFs
-        | undefined;
+      const { FileSystem: browserFsFileSystem } =
+        (await import("public/System/BrowserFS/browserfs.min.js")) as unknown as {
+          FileSystem?: {
+            HTTPRequest?: HttpRequestFs;
+            XmlHttpRequest?: HttpRequestFs;
+          };
+        };
+      const httpRequestFs =
+        browserFsFileSystem?.HTTPRequest ?? browserFsFileSystem?.XmlHttpRequest;
 
       return new Promise((resolve, reject) => {
         if (!httpRequestFs?.Create) {
@@ -361,7 +362,9 @@ const useFileSystemContextState = (): FileSystemContextState => {
       existingHandle?: FileSystemDirectoryHandle
     ): Promise<string> => {
       let handle: FileSystemDirectoryHandle;
-      const {showDirectoryPicker} = (window as { showDirectoryPicker?: (...args: unknown[]) => unknown });
+      const { showDirectoryPicker } = window as {
+        showDirectoryPicker?: (...args: unknown[]) => unknown;
+      };
 
       try {
         handle =
@@ -496,9 +499,8 @@ const useFileSystemContextState = (): FileSystemContextState => {
 
       if (hasNoHandle) return;
 
-      const { removeFileSystemHandle } = await import(
-        "contexts/fileSystem/functions"
-      );
+      const { removeFileSystemHandle } =
+        await import("contexts/fileSystem/functions");
 
       removeFileSystemHandle(directory);
     },
@@ -510,7 +512,7 @@ const useFileSystemContextState = (): FileSystemContextState => {
       directory: string,
       callback: NewPath,
       accept?: string,
-      multiple: boolean = true
+      multiple = true
     ): Promise<string[]> =>
       new Promise((resolve) => {
         const fileInput = document.createElement("input");
@@ -610,8 +612,8 @@ const useFileSystemContextState = (): FileSystemContextState => {
       name: string,
       directory: string,
       buffer?: Buffer,
-      iteration: number = 0,
-      overwrite: boolean = false
+      iteration = 0,
+      overwrite = false
     ): Promise<string> => {
       if (!name.trim()) return "";
 
@@ -733,13 +735,18 @@ const useFileSystemContextState = (): FileSystemContextState => {
     writable.stat(
       resumePath,
       false,
-      (statError: ApiError | null, stats?: Stats) => {
+      (statError?: ApiError | null, stats?: Stats) => {
         if (statError || !stats) return;
 
+        const statWithMs = stats as Stats & { mtimeMs?: number };
+        const mtimeMs =
+          typeof statWithMs.mtimeMs === "number"
+            ? statWithMs.mtimeMs
+            : stats.mtime instanceof Date
+              ? stats.mtime.getTime()
+              : 0;
         const isStale =
-          (expectedMtime > 0 &&
-            stats.mtimeMs > 0 &&
-            stats.mtimeMs < expectedMtime) ||
+          (expectedMtime > 0 && mtimeMs > 0 && mtimeMs < expectedMtime) ||
           (expectedSize > 0 && stats.size >= 0 && stats.size !== expectedSize);
 
         if (!isStale) return;
