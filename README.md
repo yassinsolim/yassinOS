@@ -4,6 +4,10 @@ A web-based “desktop OS” experience that powers the inner environment of my 
 
 Live (when deployed): **os.yassin.app**
 
+## Preview
+
+![yassinOS preview](yassin-os.png)
+
 ---
 
 ## Overview
@@ -23,15 +27,18 @@ Live (when deployed): **os.yassin.app**
 ## Getting Started (Local)
 
 ### Prerequisites
+
 - **Node.js** (recommended: current LTS)
 - **npm** (or your preferred package manager)
 
 ### Install dependencies
+
 ```bash
 npm install
 ```
 
 ### Run the dev server
+
 ```bash
 npm run dev
 ```
@@ -59,6 +66,7 @@ docker run --rm -p 3000:3000 yassinos
 ```
 
 Then visit:
+
 - `http://localhost:3000`
 
 ---
