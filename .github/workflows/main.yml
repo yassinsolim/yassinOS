@@ -6,7 +6,6 @@ on:
     paths-ignore:
       - "**/*.md"
       - "docs/**"
-      - "public/Users/Public/Desktop/Resume.pdf"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
