@@ -66,6 +66,6 @@ jobs:
         run: |
           docker network create "$APP_NETWORK" || true
           docker pull "$IMAGE_REF"
-          docker stop yassinos || true
-          docker rm yassinos || true
-          docker run -d --name yassinos --network "$APP_NETWORK" -p 3000:3000 "$IMAGE_REF"
+          docker stop yassin-os || true
+          docker rm yassin-os || true
+          docker run -d --name yassin-os --restart unless-stopped --network "$APP_NETWORK" -p 3000:3000 "$IMAGE_REF"
