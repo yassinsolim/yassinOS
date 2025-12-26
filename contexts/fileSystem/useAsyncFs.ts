@@ -199,11 +199,12 @@ const useAsyncFs = (): AsyncFSModule => {
               const nextStats = new Stats(
                 FileType.FILE,
                 get9pSize(path),
-                stats.mode,
-                toDate(stats.atime, statWithMs.atimeMs),
-                toDate(stats.mtime, statWithMs.mtimeMs),
-                toDate(stats.ctime, statWithMs.ctimeMs)
+                stats.mode
               );
+
+              nextStats.atime = toDate(stats.atime, statWithMs.atimeMs);
+              nextStats.mtime = toDate(stats.mtime, statWithMs.mtimeMs);
+              nextStats.ctime = toDate(stats.ctime, statWithMs.ctimeMs);
 
               nextStats.birthtime = toDate(
                 stats.birthtime,
