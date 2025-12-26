@@ -202,14 +202,12 @@ const useAsyncFs = (): AsyncFSModule => {
                 stats.mode
               );
 
-              nextStats.atime = toDate(stats.atime, statWithMs.atimeMs);
-              nextStats.mtime = toDate(stats.mtime, statWithMs.mtimeMs);
-              nextStats.ctime = toDate(stats.ctime, statWithMs.ctimeMs);
-
-              nextStats.birthtime = toDate(
-                stats.birthtime,
-                statWithMs.birthtimeMs
-              );
+              Object.assign(nextStats, {
+                atime: toDate(stats.atime, statWithMs.atimeMs),
+                birthtime: toDate(stats.birthtime, statWithMs.birthtimeMs),
+                ctime: toDate(stats.ctime, statWithMs.ctimeMs),
+                mtime: toDate(stats.mtime, statWithMs.mtimeMs),
+              });
 
               return resolve(nextStats);
             }
