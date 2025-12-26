@@ -24,7 +24,8 @@ RUN corepack prepare yarn@1.22.22 --activate && \
 COPY . .
 
 # 3) Build the Next.js app
-RUN yarn build
+ARG RESUME_SHA
+RUN echo "Resume SHA: ${RESUME_SHA}" && yarn build
 
 # ---------- runtime stage ----------
 FROM node:20-bullseye AS runtime

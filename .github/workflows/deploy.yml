@@ -43,6 +43,7 @@ jobs:
           cache-to: type=gha,mode=max
           build-args: |
             NODE_OPTIONS=--openssl-legacy-provider
+            RESUME_SHA=${{ hashFiles('public/Users/Public/Desktop/Resume.pdf') }}
       - name: Expose image reference
         id: expose
         run: echo "image-ref=${IMAGE_NAME}@${{ steps.build.outputs.digest }}" >> "$GITHUB_OUTPUT"
