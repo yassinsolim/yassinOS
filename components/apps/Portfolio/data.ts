@@ -6,15 +6,34 @@ export const contact = {
   name: "Yassin Soliman",
   phone: "403-671-2013",
   summary:
-    "Builder focused on full-stack products, embedded control, and computer vision systems that bridge hardware and the web.",
-  tagline: "Software Engineering @ University of Calgary (Schulich)",
+    "Builder focused on full-stack products, DevSecOps, and computer vision systems that bridge hardware and the web.",
+  tagline:
+    "Software Engineering @ University of Calgary (Schulich School of Engineering)",
 };
 
 export const projects = [
   {
     highlights: [
-      "Leading v3 of a telesurgery-ready robotic arm: moving from servos to steppers, TCP instead of UDP, plus safety interlocks for surgeon + patient.",
-      "Coordinating a two-Arduino UNO R4 wireless stack (controller + arm mover) that can operate room-to-room today and over sat/cell links in space.",
+      "Designed an interactive, OS-style personal portfolio with draggable windows and app-like navigation using Next.js, React, TypeScript, TailwindCSS, and Three.js to showcase projects and experience.",
+      "Containerized the application with Docker and deployed it on a self-hosted Proxmox VE homelab, achieving reliable uptime and responsive performance without relying on third-party PaaS.",
+      "Implemented GitHub-driven CI/CD workflows to automatically build, test, and deploy changes on push, enabling rapid experimentation with minimal downtime.",
+    ],
+    name: "yassin.app",
+    tech: [
+      "Next.js",
+      "React",
+      "TypeScript",
+      "TailwindCSS",
+      "Three.js",
+      "Docker",
+      "Proxmox VE",
+    ],
+    timeline: "Ongoing",
+  },
+  {
+    highlights: [
+      "Leading v3 of a telesurgery robotic arm: moving from servos to steppers, TCP instead of UDP, plus safety interlocks for surgeon + patient.",
+      "Coordinating a two-Arduino UNO R4 wireless stack (controller + arm mover) that can operate room-to-room today and eventually over sat/cell links in space.",
       "Building the showcase site in Next.js/TypeScript/Tailwind and steering an 8-person software team through hardware iterations and QA.",
     ],
     name: "Waybionic",
