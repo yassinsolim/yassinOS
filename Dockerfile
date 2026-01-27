@@ -14,6 +14,7 @@ RUN corepack enable
 
 # Fix old webpack/OpenSSL issues (browserfs, etc.)
 ENV NODE_OPTIONS=--openssl-legacy-provider
+ENV HUSKY=0
 
 # 1) Install JS deps (cached layer)
 COPY package.json yarn.lock ./
