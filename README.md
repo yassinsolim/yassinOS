@@ -90,3 +90,4 @@ This repo is the **inner site** used by my portfolio’s outer layer:
 
 - Best experienced on a **computer** (mouse + keyboard).
 - If you find bugs or have ideas for improvements, feel free to open an issue or message me.
+
