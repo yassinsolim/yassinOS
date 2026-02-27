@@ -6,9 +6,9 @@ export const contact = {
   name: "Yassin Soliman",
   phone: "403-671-2013",
   summary:
-    "Builder focused on full-stack products, DevSecOps, and computer vision systems that bridge hardware and the web.",
+    "Software engineer focused on GPU software, embedded systems, and full-stack products that bridge hardware and the web.",
   tagline:
-    "Software Engineering @ University of Calgary (Schulich School of Engineering)",
+    "Software Engineering @ University of Calgary | Incoming AGS Libraries Intern @ AMD",
 };
 
 export const projects = [
@@ -108,6 +108,17 @@ export const projects = [
 
 export const experience = [
   {
+    company: "AMD",
+    highlights: [
+      "Joining the AGS Libraries group to work on GPU-accelerated math and communication libraries within AMD’s open-source ROCm software platform.",
+      "Will contribute to feature and API development, testing, and debugging for performance-critical AI and high-performance computing workloads on modern AMD GPUs.",
+      "Expected to deepen experience in GPU programming, Linux-based development, open-source workflows, and performance-oriented software engineering using C++, HIP, and Python.",
+    ],
+    role: "Incoming AGS Libraries Intern",
+    tech: ["ROCm", "HIP", "C++", "Python", "Linux", "GPU Programming"],
+    timeline: "May 2026 - Apr 2027",
+  },
+  {
     company: "Waybionic",
     highlights: [
       "Led control software for a robotic bionic arm, programming motion control in C/C++ and Arduino for precise movement.",
@@ -143,12 +154,13 @@ export const experience = [
 
 export const education = {
   coursework: [
+    "Algorithms & Data Structures",
     "Computer Architecture & Organization",
     "Databases",
     "Embedded Systems",
     "Machine Learning & Deep Learning",
     "Networks",
-    "OOP & Data Structures",
+    "Object-Oriented Programming",
     "Operating Systems",
     "Software Design",
   ],
@@ -158,15 +170,13 @@ export const education = {
 
 export const skills = {
   frameworks: [
-    "AngularJS",
-    "Bootstrap",
     "Django",
-    "Golang",
     "JUnit",
     "Next.js",
     "Node.js",
     "React",
     "Swing",
+    "TailwindCSS",
     "TensorFlow",
   ],
   languages: [
@@ -174,28 +184,25 @@ export const skills = {
     "C",
     "C++",
     "CSS",
-    "Cython",
     "HTML",
     "Java",
     "JavaScript",
     "Python",
     "SQL",
-    "TailwindCSS",
     "TypeScript",
   ],
   tools: [
     "CI/CD",
     "Docker",
     "Git/GitHub",
-    "IntelliJ",
-    "Kubernetes",
+    "HIP",
     "Linux/Unix",
-    "PyCharm",
+    "Matplotlib",
+    "Proxmox VE",
+    "ROCm",
     "SSH",
-    "VMware/VirtualBox/UTM",
     "Visual Studio Code",
     "Windows",
-    "Xcode",
     "macOS",
   ],
 };
