@@ -1,5 +1,5 @@
 export const contact = {
-  email: process.env.NEXT_PUBLIC_CONTACT_EMAIL || "solimanyassin@gmail.com",
+  email: process.env.NEXT_PUBLIC_CONTACT_EMAIL || "",
   github: "https://github.com/yassinsolim",
   linkedin: "https://linkedin.com/in/yassinsoliman",
   location: "Calgary, AB",
