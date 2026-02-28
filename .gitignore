@@ -50,3 +50,8 @@ Newapps/prototype2.mp4
 !public/Users/Public/Start Menu/Games/Quake III Arena.url
 !public/Users/Public/Start Menu/Games/Space Cadet.url
 !public/Users/Public/Videos
+
+# Environment variables
+.env.local
+.env.production
+.env

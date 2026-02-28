@@ -1,10 +1,10 @@
 export const contact = {
-  email: "solimanyassin@gmail.com",
+  email: process.env.NEXT_PUBLIC_CONTACT_EMAIL || "solimanyassin@gmail.com",
   github: "https://github.com/yassinsolim",
   linkedin: "https://linkedin.com/in/yassinsoliman",
   location: "Calgary, AB",
   name: "Yassin Soliman",
-  phone: "403-671-2013",
+  phone: process.env.NEXT_PUBLIC_CONTACT_PHONE || "",
   summary:
     "Software engineer focused on GPU software, embedded systems, and full-stack products that bridge hardware and the web.",
   tagline:
