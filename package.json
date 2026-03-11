@@ -57,7 +57,7 @@
     "dompurify": "^3.3.0",
     "exif-js": "^2.3.0",
     "fflate": "^0.8.2",
-    "file-type": "^21.0.0",
+    "file-type": "^21.3.1",
     "fix-webm-duration": "^1.0.6",
     "gif.js": "^0.2.0",
     "idb": "^8.0.3",
