@@ -53,6 +53,7 @@ const StyledPortfolio = styled.div`
     font-size: 16px;
     letter-spacing: 0.15px;
     margin: 0 0 4px;
+    white-space: pre-line;
   }
 
   p {

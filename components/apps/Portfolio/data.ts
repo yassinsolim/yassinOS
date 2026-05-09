@@ -8,7 +8,7 @@ export const contact = {
   summary:
     "Software engineer focused on GPU software, embedded systems, and full-stack products that bridge hardware and the web.",
   tagline:
-    "Software Engineering @ University of Calgary | AI GPU Software Libraries Intern @ AMD",
+    "AI GPU Software Libraries Intern @ AMD | \n Software Engineering @ University of Calgary",
 };
 
 export const projects = [
