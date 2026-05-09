@@ -36,16 +36,6 @@ const Portfolio: FC<ComponentProcessProps> = ({ id }) => {
             <div className="pill-row contact-actions">
               <button
                 className="pill"
-                onClick={() => openExternal(`mailto:${contact.email}`)}
-                type="button"
-              >
-                Email: {contact.email}
-              </button>
-              <button className="pill" type="button">
-                Location: {contact.location}
-              </button>
-              <button
-                className="pill"
                 onClick={() => openExternal(contact.github)}
                 type="button"
               >
@@ -69,10 +59,10 @@ const Portfolio: FC<ComponentProcessProps> = ({ id }) => {
           </div>
           <div className="card snapshot-card">
             <div className="section-title">Snapshot</div>
-            <p className="muted">{contact.location}</p>
             <p>
-              Full-stack and embedded builder combining computer vision, control
-              systems, and product UX to ship usable projects end-to-end.
+              Working on HIPDNN and MIOpen heuristics at AMD, with a focus on
+              deep learning software, deep neural network performance, and GPU
+              library workflows.
             </p>
           </div>
         </header>

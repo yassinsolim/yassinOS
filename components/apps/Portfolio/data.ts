@@ -2,11 +2,10 @@ export const contact = {
   email: "solimanyassin@gmail.com",
   github: "https://github.com/yassinsolim",
   linkedin: "https://linkedin.com/in/yassinsoliman",
-  location: "Calgary, AB",
   name: "Yassin Soliman",
   phone: "403-671-2013",
   summary:
-    "Software engineer focused on GPU software, embedded systems, and full-stack products that bridge hardware and the web.",
+    "Software engineer focused on GPU-accelerated deep learning libraries, neural network performance, and practical systems that connect low-level optimization with product-grade software.",
   tagline:
     "AI GPU Software Libraries Intern @ AMD | \n Software Engineering @ University of Calgary",
 };
@@ -114,7 +113,7 @@ export const experience = [
       "Will contribute to feature and API development, testing, and debugging for performance-critical AI and high-performance computing workloads on modern AMD GPUs.",
       "Expected to deepen experience in GPU programming, Linux-based development, open-source workflows, and performance-oriented software engineering using C++, HIP, and Python.",
     ],
-    role: "Incoming AGS Libraries Intern",
+    role: "AGS Libraries Intern",
     tech: ["ROCm", "HIP", "C++", "Python", "Linux", "GPU Programming"],
     timeline: "May 2026 - Apr 2027",
   },
