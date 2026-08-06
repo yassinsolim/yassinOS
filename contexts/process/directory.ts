@@ -186,6 +186,12 @@ const directory: Processes = {
   PDF: {
     Component: dynamic(() => import("components/apps/PDF")),
     backgroundColor: "#525659",
+    // Portrait, so a full page renders far larger than it would in a landscape
+    // window. Clamped to the viewport by minMaxSize on smaller screens.
+    defaultSize: {
+      height: 920,
+      width: 780,
+    },
     icon: "/System/Icons/pdf.webp",
     libs: ["/Program Files/PDF.js/pdf.js"],
     title: "PDF",

@@ -227,14 +227,15 @@ export const experience = [
   {
     company: "AMD",
     highlights: [
-      "Joining the AGS Libraries group to work on GPU-accelerated math and communication libraries within AMD\u2019s open-source ROCm software platform.",
-      "Will contribute to feature and API development, testing, and debugging for performance-critical AI and high-performance computing workloads on modern AMD GPUs.",
-      "Expected to deepen experience in GPU programming, Linux-based development, open-source workflows, and performance-oriented software engineering using C++, HIP, and Python.",
+      "Built MIOpen/hipDNN performance and benchmark tooling: SLURM-driven benchmark orchestration, MCP shape-collection management, and a Python performance database viewer, across roughly 10K lines of Python and shell.",
+      "Prototyped hipDNN heuristic plugins (SDPA and convolution regime classifiers, engine-ID probes) and a ROCm 7.12 MIOpen provider verifier in the public ROCm libraries to route deep-learning kernels to faster GPU solvers.",
+      "Reduced representative MIOpen benchmark command sets by 95% (35K to 1.8K) while preserving 100% solver and config coverage, cutting GPU tuning time.",
+      "Improved deep-learning kernel throughput ~15% for a production model benchmark suite on AMD Instinct GPUs by routing convolution/attention shapes to faster solvers.",
     ],
-    location: "Markham, ON",
-    role: "AGS Libraries Intern",
-    tech: ["ROCm", "HIP", "C++", "Python", "Linux", "GPU Programming"],
-    timeline: "May 2026 - Apr 2027",
+    location: "Calgary, AB",
+    role: "Software Engineer Intern, AI GPU Software (AGS) Libraries",
+    tech: ["C++", "Python", "ROCm", "MIOpen", "hipDNN", "SLURM", "CI/CD"],
+    timeline: "May 2025 - Present",
   },
   {
     company: "Waybionic Club",

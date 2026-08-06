@@ -25,15 +25,42 @@ export const scales = [
 
 const CANVAS_MARGIN_PX = 4;
 
-const getInitialScale = (windowWidth = 0, canvasWidth = 0): number => {
-  const adjustedWindowWidth = windowWidth - CANVAS_MARGIN_PX * 2;
+/**
+ * Scale so the whole page is visible, growing past 100% when there is room.
+ * Snapped to a `scales` entry because the zoom controls step through that
+ * ladder by index.
+ */
+const getInitialScale = (
+  windowWidth = 0,
+  windowHeight = 0,
+  pageWidth = 0,
+  pageHeight = 0
+): number => {
+  const availableWidth = windowWidth - CANVAS_MARGIN_PX * 2;
+  const availableHeight = windowHeight - CANVAS_MARGIN_PX * 2;
 
-  if (adjustedWindowWidth >= canvasWidth) return 1;
+  if (
+    availableWidth <= 0 ||
+    availableHeight <= 0 ||
+    pageWidth <= 0 ||
+    pageHeight <= 0
+  ) {
+    return 1;
+  }
 
-  const minScale = adjustedWindowWidth / canvasWidth;
-  const minScaleIndex = scales.findIndex((scale) => scale >= minScale);
+  const containScale = Math.min(
+    availableWidth / pageWidth,
+    availableHeight / pageHeight
+  );
+  let fittedScale = scales[0];
 
-  return minScaleIndex > 0 ? scales[minScaleIndex - 1] : 1;
+  for (const scale of scales) {
+    if (scale > containScale) break;
+
+    fittedScale = scale;
+  }
+
+  return fittedScale;
 };
 
 const usePDF = (
@@ -65,10 +92,12 @@ const usePDF = (
       if (scale) {
         viewport = page.getViewport({ scale });
       } else {
-        const pageWidth = page.getViewport().viewBox[2];
+        const baseViewport = page.getViewport({ scale: 1 });
         const initialScale = getInitialScale(
           containerRef.current?.clientWidth,
-          pageWidth
+          containerRef.current?.clientHeight,
+          baseViewport.width,
+          baseViewport.height
         );
 
         argument(id, "scale", initialScale);
