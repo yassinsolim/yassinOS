@@ -1,4 +1,4 @@
-const { lstat, mkdir, readdir, readlink, writeFile } = require("fs");
+const { mkdir, readdir, readlink, stat, writeFile } = require("fs");
 const { basename, dirname, join, resolve: resolvePath } = require("path");
 
 const VERSION = 4;
@@ -54,7 +54,9 @@ const fs2json = (dir) => {
           if (file) {
             const fullPath = join(walkDir, file);
 
-            lstat(fullPath, (statError, fileStat) => {
+            // stat, not lstat: the v4 index has no symlink variant, so links
+            // must stay dereferenced into real file/directory entries.
+            stat(fullPath, (statError, fileStat) => {
               if (statError) {
                 reject(statError);
                 return;

@@ -13,7 +13,7 @@ type WaybackUrlInfo = {
 };
 
 export const DINO_GAME = {
-  icon: "/System/Icons/Favicons/16x16/dino.webp",
+  icon: "/System/Icons/Favicons/dino.webp",
   name: "T-Rex Chrome Dino Game",
   path: "/Program Files/Browser/dino/index.html",
   url: "chrome://dino",
@@ -26,23 +26,23 @@ export const bookmarks: Bookmark[] = [
     url: "https://yassin.app/",
   },
   {
-    icon: "/System/Icons/Favicons/16x16/dir.webp",
+    icon: "/System/Icons/Favicons/dir.webp",
     name: "Index of /",
     url: "http://localhost/",
   },
   DINO_GAME,
   {
-    icon: "/System/Icons/Favicons/16x16/google.webp",
+    icon: "/System/Icons/Favicons/google.webp",
     name: "Google",
     url: "https://www.google.com/webhp?igu=1",
   },
   {
-    icon: "/System/Icons/Favicons/16x16/wikipedia.webp",
+    icon: "/System/Icons/Favicons/wikipedia.webp",
     name: "Wikipedia",
     url: "https://www.wikipedia.org/",
   },
   {
-    icon: "/System/Icons/Favicons/16x16/archive.webp",
+    icon: "/System/Icons/Favicons/archive.webp",
     name: "Internet Archive",
     url: "https://archive.org/",
   },
@@ -52,7 +52,7 @@ export const bookmarks: Bookmark[] = [
     url: "https://skins.webamp.org/",
   },
   {
-    icon: "/System/Icons/Favicons/16x16/aos.webp",
+    icon: "/System/Icons/Favicons/aos.webp",
     name: "AaronOS",
     url: "https://aaronos.dev/",
   },

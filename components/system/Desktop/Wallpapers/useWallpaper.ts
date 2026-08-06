@@ -12,6 +12,7 @@ import {
   WALLPAPER_WORKERS,
   WALLPAPER_WORKER_NAMES,
   bgPositionSize,
+  cancelWallpaperRun,
 } from "components/system/Desktop/Wallpapers/constants";
 import {
   type WallpaperMessage,
@@ -65,6 +66,9 @@ const useWallpaper = (
   const failedOffscreenContext = useRef(false);
   const resetWallpaper = useCallback(
     (keepCanvas?: boolean): void => {
+      // Unconditional: a superseded async wallpaper must not apply its result
+      // even when the canvas is reused by the replacement.
+      cancelWallpaperRun();
       desktopRef.current?.querySelector(BASE_VIDEO_SELECTOR)?.remove();
 
       if (!keepCanvas) {

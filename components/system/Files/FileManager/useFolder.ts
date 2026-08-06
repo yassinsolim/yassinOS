@@ -184,7 +184,7 @@ const useFolder = (
   );
   const updateFiles = useCallback(
     async (newFile?: string, oldFile?: string) => {
-      const {signal} = updateFilesAbortControllerRef.current;
+      const { signal } = updateFilesAbortControllerRef.current;
       const canUpdate = (): boolean =>
         !signal.aborted && currentDirectoryRef.current === directory;
 
@@ -793,6 +793,7 @@ const useFolder = (
     [addFile, directory, newPath, pasteToFolder, sortByOrder]
   );
   const updatingFiles = useRef(false);
+  const updatingDirectory = useRef("");
 
   useEffect(() => {
     if (directory !== currentDirectory) {
@@ -834,14 +835,20 @@ const useFolder = (
             );
           }
         }
-      } else if (!updatingFiles.current) {
+      } else if (
+        !updatingFiles.current ||
+        updatingDirectory.current !== directory
+      ) {
         updatingFiles.current = true;
+        updatingDirectory.current = directory;
         updateFiles()
           .catch(() => {
             // Ignore failure to refresh folder contents
           })
           .finally(() => {
-            updatingFiles.current = false;
+            if (updatingDirectory.current === directory) {
+              updatingFiles.current = false;
+            }
           });
       }
     }
