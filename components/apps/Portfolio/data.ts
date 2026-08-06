@@ -90,7 +90,7 @@ export const projects = [
   },
   {
     highlights: [
-      "Source-style kinematic movement controller running a fixed 128 Hz simulation with surf, ground, and air handling, ramp clipping, and slide movement.",
+      "Source-style kinematic movement controller running a unit-tested, fixed 128 Hz simulation with surf, ground, and air handling, ramp clipping, and slide movement.",
       "Map manifest system with BVH collision against static triangle meshes, plus a separate render scene and camera for the first-person viewmodel pipeline.",
       "Run timer with finish detection, online leaderboard submission, and multiplayer presence with remote player models.",
     ],
@@ -148,7 +148,8 @@ export const projects = [
   {
     highlights: [
       "Browser arcade-sim racing engine with custom vehicle physics tuned for the Nordschleife.",
-      "Real-time multiplayer plus ghost replays for solo time attack.",
+      "12.7K lines covering raycast suspension, drift handling, and ghost replays.",
+      "Real-time multiplayer over Supabase with ghost replays for solo time attack and a Postgres global leaderboard secured by row-level security.",
       "Built in TypeScript and Three.js and embedded into the 3D personal site.",
     ],
     name: "Nordschleife Racer",
@@ -156,7 +157,14 @@ export const projects = [
     site: "https://yassin.app",
     summary:
       "Arcade-sim racing engine with custom physics, multiplayer, and ghost replays.",
-    tech: ["TypeScript", "Three.js", "WebSockets", "Vehicle Physics"],
+    tech: [
+      "TypeScript",
+      "Three.js",
+      "WebGL",
+      "Supabase",
+      "WebSockets",
+      "Vehicle Physics",
+    ],
     timeline: "2026",
   },
   {
@@ -289,6 +297,31 @@ export const experience = [
   },
 ];
 
+export const openSource = [
+  {
+    highlights: [
+      "Merged two PRs into the 1.5K+ star project.",
+      "#1209 centralized Zod validation and cache recovery, and passed build, lint and CodeQL.",
+      "#1210 fixed translations by using Spotify's active client locale.",
+    ],
+    links: [
+      { label: "Repo", url: "https://github.com/spicetify/marketplace" },
+      {
+        label: "PR #1209",
+        url: "https://github.com/spicetify/marketplace/pull/1209",
+      },
+      {
+        label: "PR #1210",
+        url: "https://github.com/spicetify/marketplace/pull/1210",
+      },
+    ],
+    name: "Spicetify Marketplace",
+    role: "Contributor",
+    tech: ["TypeScript", "React", "Zod", "i18next"],
+    timeline: "2026",
+  },
+];
+
 export const education = {
   coursework: [
     "Operating Systems",
@@ -313,23 +346,35 @@ export const education = {
 };
 
 export const skills = {
-  frameworks: [
-    "React",
-    "Next.js",
-    "Three.js",
-    "JUnit",
-    "Swing",
-    "Django",
-    "Node.js",
+  aiGpu: [
+    "ROCm",
+    "MIOpen",
+    "hipDNN",
+    "GPU Kernels",
+    "PyTorch",
     "NumPy",
     "OpenCV",
     "Ultralytics YOLOv8",
     "supervision (ByteTrack)",
-    "AWS (API Gateway, Lambda, DynamoDB, SNS)",
+  ],
+  frameworks: [
+    "React",
+    "Next.js",
+    "Three.js",
+    "WebGL",
+    "JUnit",
+    "Swing",
+    "Django",
+    "Node.js",
+    "Fastify",
+    "Expo / React Native",
+    "Supabase",
+    "AWS (API Gateway, Lambda, DynamoDB, SNS, S3)",
     "CI/CD",
   ],
   languages: [
     "C",
+    "Swift",
     "C++",
     "Python",
     "Java",
@@ -343,6 +388,8 @@ export const skills = {
   ],
   tools: [
     "Git/GitHub",
+    "SLURM",
+    "Agile",
     "GitHub Workflows",
     "Atlassian/Jira",
     "Docker",
