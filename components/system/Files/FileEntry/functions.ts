@@ -423,11 +423,14 @@ export const getInfoWithExtension = (
           comment,
           icon,
           pid,
+          type,
           url,
         }: FileInfo): void => {
           const urlExt = getExtension(url);
 
-          if (pid !== "ExternalURL") subIcons.push(SHORTCUT_ICON);
+          if (pid !== "ExternalURL" && type !== "Application") {
+            subIcons.push(SHORTCUT_ICON);
+          }
 
           if (pid === "FileExplorer" && !icon) {
             const iconCallback = (newIcon?: string): void => {
@@ -589,8 +592,9 @@ export const getInfoWithExtension = (
       getInfoByFileExtension("/System/Icons/executable.webp", (signal) =>
         fs.readFile(path, async (error, contents = Buffer.from("")) => {
           if (!error && contents.length > 0 && !signal.aborted) {
-            const { extractExeIcon } =
-              await import("components/system/Files/FileEntry/exeIcons");
+            const { extractExeIcon } = await import(
+              "components/system/Files/FileEntry/exeIcons"
+            );
             const exeIcon = await extractExeIcon(contents);
 
             if (exeIcon && !signal.aborted) {
