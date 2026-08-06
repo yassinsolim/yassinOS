@@ -2,3 +2,4 @@
 BaseURL=Portfolio
 Comment=Open the portfolio.exe app
 IconFile=/System/Icons/portfolio.png
+Type=Application
