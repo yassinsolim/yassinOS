@@ -5,6 +5,7 @@ import {
   contact,
   education,
   experience,
+  openSource,
   projects,
   skills,
   snapshot,
@@ -185,6 +186,47 @@ const Portfolio: FC<ComponentProcessProps> = ({ id }) => {
           </div>
         </section>
 
+        <section className="section">
+          <div className="section-title">Open Source Contributions</div>
+          <div className="grid grid-wide">
+            {openSource.map(
+              ({ name, role, timeline, highlights, links, tech }) => (
+                <div key={name} className="card">
+                  <div className="card-head">
+                    <h3>{name}</h3>
+                    <span className="muted">{timeline}</span>
+                  </div>
+                  <div className="muted">{role}</div>
+                  <ul className="list">
+                    {highlights.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                  <div className="tech">
+                    {tech.map((item) => (
+                      <span key={item} className="badge">
+                        {item}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="pill-row">
+                    {links.map(({ label, url }) => (
+                      <button
+                        key={label}
+                        className="pill ghost"
+                        onClick={() => openExternal(url)}
+                        type="button"
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )
+            )}
+          </div>
+        </section>
+
         <section className="split">
           <div className="card">
             <div className="section-title">Education</div>
@@ -212,6 +254,16 @@ const Portfolio: FC<ComponentProcessProps> = ({ id }) => {
               <h4>Languages</h4>
               <div className="tech">
                 {skills.languages.map((item) => (
+                  <span key={item} className="badge">
+                    {item}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div className="skill-group">
+              <h4>AI & GPU</h4>
+              <div className="tech">
+                {skills.aiGpu.map((item) => (
                   <span key={item} className="badge">
                     {item}
                   </span>
