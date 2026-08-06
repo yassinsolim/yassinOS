@@ -13,7 +13,7 @@ type WaybackUrlInfo = {
 };
 
 export const DINO_GAME = {
-  icon: "/System/Icons/Favicons/dino.webp",
+  icon: "/System/Icons/Favicons/16x16/dino.webp",
   name: "T-Rex Chrome Dino Game",
   path: "/Program Files/Browser/dino/index.html",
   url: "chrome://dino",
@@ -26,23 +26,23 @@ export const bookmarks: Bookmark[] = [
     url: "https://yassin.app/",
   },
   {
-    icon: "/System/Icons/Favicons/dir.webp",
+    icon: "/System/Icons/Favicons/16x16/dir.webp",
     name: "Index of /",
     url: "http://localhost/",
   },
   DINO_GAME,
   {
-    icon: "/System/Icons/Favicons/google.webp",
+    icon: "/System/Icons/Favicons/16x16/google.webp",
     name: "Google",
     url: "https://www.google.com/webhp?igu=1",
   },
   {
-    icon: "/System/Icons/Favicons/wikipedia.webp",
+    icon: "/System/Icons/Favicons/16x16/wikipedia.webp",
     name: "Wikipedia",
     url: "https://www.wikipedia.org/",
   },
   {
-    icon: "/System/Icons/Favicons/archive.webp",
+    icon: "/System/Icons/Favicons/16x16/archive.webp",
     name: "Internet Archive",
     url: "https://archive.org/",
   },
@@ -52,7 +52,7 @@ export const bookmarks: Bookmark[] = [
     url: "https://skins.webamp.org/",
   },
   {
-    icon: "/System/Icons/Favicons/aos.webp",
+    icon: "/System/Icons/Favicons/16x16/aos.webp",
     name: "AaronOS",
     url: "https://aaronos.dev/",
   },
@@ -77,11 +77,14 @@ export const PROXIES: Record<
   ProxyState,
   ((url: string) => Promise<string> | string) | undefined
 > = {
-  ALL_ORIGINS: (url) => `https://api.allorigins.win/raw?url=${url}`,
+  ALL_ORIGINS: (url) =>
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
   CORS: undefined,
   WAYBACK_MACHINE: async (url) => {
     try {
-      const urlInfoResponse = await fetch(`${WAYBACK_URL_INFO}${url}`);
+      const urlInfoResponse = await fetch(
+        `${WAYBACK_URL_INFO}${encodeURIComponent(url)}`
+      );
       const { archived_snapshots } =
         (await urlInfoResponse.json()) as WaybackUrlInfo;
 
@@ -106,7 +109,8 @@ export const PROXIES: Record<
   ...Object.fromEntries(
     OLD_NET_SUPPORTED_YEARS.map((year) => [
       `OLD_NET_${year}`,
-      (url) => `${OLD_NET_PROXY.replace("<year>", year.toString())}${url}`,
+      (url) =>
+        `${OLD_NET_PROXY.replace("<year>", year.toString())}${encodeURIComponent(url)}`,
     ])
   ),
 };

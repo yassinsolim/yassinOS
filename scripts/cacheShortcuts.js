@@ -1,4 +1,11 @@
-const { readdirSync, readFileSync, writeFileSync, statSync } = require("fs");
+const {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  statSync,
+  writeFileSync,
+} = require("fs");
 const { extname, join } = require("path");
 const { parse } = require("ini");
 
@@ -28,6 +35,10 @@ const getAllShortcuts = (rootPath) => {
 
   return shortcutData;
 };
+
+if (!existsSync(join(PUBLIC_DIR, ".index"))) {
+  mkdirSync(join(PUBLIC_DIR, ".index"), { recursive: true });
+}
 
 writeFileSync(
   "./public/.index/shortcutCache.json",

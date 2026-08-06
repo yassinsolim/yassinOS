@@ -57,6 +57,8 @@ const createRssFeedItems = (url) => {
   });
 };
 
+const feedItems = createRssFeedItems("Users/Public/Documents/Blog Posts");
+
 const name = "yassinOS";
 const rss = [
   '<?xml version="1.0" encoding="utf-8"?>',
@@ -67,7 +69,7 @@ const rss = [
   `<link>${author.url}</link>`,
   `<description>${description}</description>`,
   `<lastBuildDate>${lastBuildDate || new Date().toUTCString()}</lastBuildDate>`,
-  ...createRssFeedItems("Users/Public/Documents/Blog Posts"),
+  ...feedItems,
   "</channel>",
   "</rss>",
 ].join("");

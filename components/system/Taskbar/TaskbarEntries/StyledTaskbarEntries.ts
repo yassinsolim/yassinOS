@@ -12,7 +12,9 @@ const StyledTaskbarEntries = styled.ol<StyledTaskbarEntriesProps>`
   height: 100%;
   left: ${({ $pinnedCount, theme }) =>
     theme.sizes.taskbar.button.width * (2 + $pinnedCount)}px;
+  list-style: none;
   margin: 0 3px;
+  padding: 0;
   overflow: hidden;
   position: absolute;
   right: ${({ $clockWidth, $hasAI, theme }) =>

@@ -26,29 +26,43 @@ const vantaWaves = (
 
   if (!el || typeof WebGLRenderingContext === "undefined") return;
 
-  loadFiles(libs, true).then(() => {
-    const { VANTA: { WAVES } = {} } = window;
+  loadFiles(libs, true)
+    .then(() => {
+      const { VANTA: { WAVES } = {} } = window;
 
-    if (WAVES) {
-      try {
-        const { material, waveSpeed } = config as VantaWavesConfig;
-        const wavesConfig = {
-          ...vantaConfig,
-          waveSpeed: vantaConfig.waveSpeed * waveSpeed,
-        };
+      if (WAVES) {
+        try {
+          const { material, waveSpeed } = config as VantaWavesConfig;
+          const wavesConfig = {
+            ...vantaConfig,
+            waveSpeed: vantaConfig.waveSpeed * waveSpeed,
+          };
 
-        wavesConfig.material.options.wireframe = material.options.wireframe;
+          wavesConfig.material.options.wireframe = material.options.wireframe;
 
-        WAVES({
-          el,
-          ...disableControls,
-          ...wavesConfig,
-        });
-      } catch {
+          const effect = WAVES({
+            el,
+            ...disableControls,
+            ...wavesConfig,
+          });
+
+          window.WallpaperDestroy = () => {
+            try {
+              effect.destroy();
+            } catch {
+              // Failed to cleanup effect
+            }
+
+            window.WallpaperDestroy = undefined;
+          };
+        } catch {
+          fallback?.();
+        }
+      } else {
         fallback?.();
       }
-    }
-  });
+    })
+    .catch(() => fallback?.());
 };
 
 export default vantaWaves;

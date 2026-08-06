@@ -30,6 +30,8 @@ const Matrix = async (
 
   await loadFiles(libs, undefined, undefined, true);
 
+  if (!canvas.isConnected) return;
+
   const overrides = { ...(config as Partial<MatrixConfigType>) };
 
   if (typeof overrides.backgroundColor === "string") {
