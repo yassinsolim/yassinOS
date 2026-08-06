@@ -77,11 +77,14 @@ export const PROXIES: Record<
   ProxyState,
   ((url: string) => Promise<string> | string) | undefined
 > = {
-  ALL_ORIGINS: (url) => `https://api.allorigins.win/raw?url=${url}`,
+  ALL_ORIGINS: (url) =>
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
   CORS: undefined,
   WAYBACK_MACHINE: async (url) => {
     try {
-      const urlInfoResponse = await fetch(`${WAYBACK_URL_INFO}${url}`);
+      const urlInfoResponse = await fetch(
+        `${WAYBACK_URL_INFO}${encodeURIComponent(url)}`
+      );
       const { archived_snapshots } =
         (await urlInfoResponse.json()) as WaybackUrlInfo;
 
@@ -106,7 +109,8 @@ export const PROXIES: Record<
   ...Object.fromEntries(
     OLD_NET_SUPPORTED_YEARS.map((year) => [
       `OLD_NET_${year}`,
-      (url) => `${OLD_NET_PROXY.replace("<year>", year.toString())}${url}`,
+      (url) =>
+        `${OLD_NET_PROXY.replace("<year>", year.toString())}${encodeURIComponent(url)}`,
     ])
   ),
 };

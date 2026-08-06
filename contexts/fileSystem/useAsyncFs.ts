@@ -236,12 +236,12 @@ const useAsyncFs = (): AsyncFSModule => {
             (error) => {
               if (error && (!overwrite || error.code !== "EEXIST")) {
                 if (error.code === "ENOENT" && error.path === "/") {
-                  import("contexts/fileSystem/functions").then(
-                    ({ resetStorage }) =>
-                      resetStorage(rootFs).finally(() =>
-                        window.location.reload()
-                      )
-                  );
+                  import("contexts/fileSystem/functions")
+                    .then(({ resetStorage }) => resetStorage(rootFs))
+                    .finally(() => window.location.reload())
+                    .catch(() => {
+                      // Ignore failure while resetting storage before reload
+                    });
                 }
 
                 reject(error);
@@ -272,6 +272,8 @@ const useAsyncFs = (): AsyncFSModule => {
   );
 
   useEffect(() => {
+    let canceled = false;
+
     if (!fs) {
       const queueFsCall =
         (name: string) =>
@@ -299,17 +301,33 @@ const useAsyncFs = (): AsyncFSModule => {
     } else if ("getRootFS" in fs) {
       runQueuedFsCalls(fs);
     } else {
-      const setupFs = (writeToIndexedDB: boolean): void =>
-        configure(FileSystemConfig(!writeToIndexedDB), () => {
+      const setupFs = (writeToIndexedDB: boolean): void => {
+        if (canceled) return;
+
+        configure(FileSystemConfig(!writeToIndexedDB), (error) => {
+          if (canceled) return;
+
+          if (error) {
+            if (writeToIndexedDB) setupFs(false);
+            return;
+          }
+
           const loadedFs = BFSRequire("fs");
 
           fsRef.current = loadedFs;
           setFs(loadedFs);
           setRootFs(loadedFs.getRootFS() as RootFileSystem);
         });
+      };
 
-      supportsIndexedDB().then(setupFs);
+      supportsIndexedDB()
+        .then(setupFs)
+        .catch(() => setupFs(false));
     }
+
+    return () => {
+      canceled = true;
+    };
   }, [fs]);
 
   return useMemo(

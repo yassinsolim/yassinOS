@@ -149,6 +149,16 @@ const useFolder = (
   const { [directory]: [sortOrder, sortBy, sortAscending] = [] } =
     sortOrders || {};
   const [currentDirectory, setCurrentDirectory] = useState(directory);
+  const currentDirectoryRef = useRef(directory);
+  currentDirectoryRef.current = directory;
+  const updateFilesAbortControllerRef = useRef(new AbortController());
+  useEffect(() => {
+    const abortController = new AbortController();
+
+    updateFilesAbortControllerRef.current = abortController;
+
+    return () => abortController.abort();
+  }, [/* effect dep */ directory]);
   const { close, closeProcessesByUrl } = useProcesses();
   const statsWithShortcutInfo = useCallback(
     async (fileName: string, stats: Stats): Promise<FileStat> => {
@@ -174,13 +184,23 @@ const useFolder = (
   );
   const updateFiles = useCallback(
     async (newFile?: string, oldFile?: string) => {
+      const { signal } = updateFilesAbortControllerRef.current;
+      const canUpdate = (): boolean =>
+        !signal.aborted && currentDirectoryRef.current === directory;
+
+      if (!canUpdate()) return;
+
       if (oldFile) {
         if (!(await exists(join(directory, oldFile)))) {
+          if (!canUpdate()) return;
+
           const oldName = basename(oldFile);
 
           if (newFile) {
-            setFiles((currentFiles) =>
-              Object.entries(currentFiles ?? {}).reduce<Files>(
+            setFiles((currentFiles) => {
+              if (!canUpdate()) return currentFiles;
+
+              return Object.entries(currentFiles ?? {}).reduce<Files>(
                 (newFiles, [fileName, fileStats]) => {
                   // eslint-disable-next-line no-param-reassign
                   newFiles[
@@ -190,11 +210,13 @@ const useFolder = (
                   return newFiles;
                 },
                 {}
-              )
-            );
+              );
+            });
           } else {
             blurEntry(oldName);
             setFiles((currentFiles) => {
+              if (!canUpdate()) return currentFiles;
+
               const { [oldName]: _fileStats, ...rest } = currentFiles ?? {};
 
               return rest;
@@ -208,26 +230,37 @@ const useFolder = (
           baseName,
           isSimpleSort ? await lstat(filePath) : await stat(filePath)
         );
+        if (!canUpdate()) return;
 
         setFiles((currentFiles) => {
+          if (!canUpdate()) return currentFiles;
+
           const nextFiles = currentFiles ?? {};
 
           return { ...nextFiles, [baseName]: fileStats };
         });
       } else {
-        setIsLoading(true);
+        setIsLoading((currentlyLoading) =>
+          canUpdate() ? true : currentlyLoading
+        );
 
         try {
           const dirContents = (await readdir(directory)).filter(
             filterSystemFiles(directory)
           );
+          if (!canUpdate()) return;
+
           const sortedFiles = await dirContents.reduce(
             async (processedFiles, file) => {
+              if (!canUpdate()) return processedFiles;
+
               try {
                 const filePath = join(directory, file);
                 const fileStats = isSimpleSort
                   ? await lstat(filePath)
                   : await stat(filePath);
+                if (!canUpdate()) return await processedFiles;
+
                 const hideEntry = hideFolders && fileStats.isDirectory();
                 let newFiles = await processedFiles;
 
@@ -245,7 +278,11 @@ const useFolder = (
                   );
                 }
 
-                if (hideLoading) setFiles(newFiles);
+                if (hideLoading && canUpdate()) {
+                  setFiles((currentFiles) =>
+                    canUpdate() ? newFiles : currentFiles
+                  );
+                }
 
                 return newFiles;
               } catch {
@@ -254,9 +291,14 @@ const useFolder = (
             },
             Promise.resolve({} as Files)
           );
+          if (!canUpdate()) return;
 
           if (dirContents.length > 0) {
-            if (!hideLoading) setFiles(sortedFiles);
+            if (!hideLoading) {
+              setFiles((currentFiles) =>
+                canUpdate() ? sortedFiles : currentFiles
+              );
+            }
 
             const newSortOrder = Object.keys(sortedFiles);
 
@@ -267,20 +309,18 @@ const useFolder = (
                   (entry, index) => newSortOrder[index] !== entry
                 ))
             ) {
-              window.requestAnimationFrame(() =>
-                setSortOrder(directory, newSortOrder)
-              );
+              window.requestAnimationFrame(() => {
+                if (canUpdate()) setSortOrder(directory, newSortOrder);
+              });
             }
-          } else {
-            setFiles(Object.create(null) as Files);
-          }
+          } else if (canUpdate()) setFiles(Object.create(null) as Files);
         } catch (error) {
-          if ((error as ApiError).code === "ENOENT") {
+          if (canUpdate() && (error as ApiError).code === "ENOENT") {
             closeProcessesByUrl(directory);
           }
         }
 
-        setIsLoading(false);
+        if (canUpdate()) setIsLoading(false);
       }
     },
     [
@@ -468,8 +508,9 @@ const useFolder = (
       const filePaths = await Promise.all(
         allPaths.map((path) => getFile(path))
       );
-      const { addEntryToZippable, createZippable } =
-        await import("utils/zipFunctions");
+      const { addEntryToZippable, createZippable } = await import(
+        "utils/zipFunctions"
+      );
 
       return filePaths
         .filter(Boolean)
@@ -752,6 +793,7 @@ const useFolder = (
     [addFile, directory, newPath, pasteToFolder, sortByOrder]
   );
   const updatingFiles = useRef(false);
+  const updatingDirectory = useRef("");
 
   useEffect(() => {
     if (directory !== currentDirectory) {
@@ -793,11 +835,21 @@ const useFolder = (
             );
           }
         }
-      } else if (!updatingFiles.current) {
+      } else if (
+        !updatingFiles.current ||
+        updatingDirectory.current !== directory
+      ) {
         updatingFiles.current = true;
-        updateFiles().then(() => {
-          updatingFiles.current = false;
-        });
+        updatingDirectory.current = directory;
+        updateFiles()
+          .catch(() => {
+            // Ignore failure to refresh folder contents
+          })
+          .finally(() => {
+            if (updatingDirectory.current === directory) {
+              updatingFiles.current = false;
+            }
+          });
       }
     }
   }, [

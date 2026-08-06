@@ -180,7 +180,7 @@ export const createFileReaders = async (
           callback(
             join(subFolder, file.name),
             Buffer.from(target.result),
-            hasSingleFile ? COMPLETE_ACTION.UPDATE_URL : undefined
+            hasSingleFile && !subFolder ? COMPLETE_ACTION.UPDATE_URL : undefined
           );
         }
       },
@@ -192,25 +192,39 @@ export const createFileReaders = async (
   const addEntry = async (
     fileSystemEntry: FileSystemEntry,
     subFolder = ""
-  ): Promise<void> =>
-    new Promise((resolve) => {
-      if (fileSystemEntry?.isDirectory) {
-        (fileSystemEntry as FileSystemDirectoryEntry)
-          .createReader()
-          .readEntries((entries) =>
-            Promise.all(
-              entries.map((entry) =>
-                addEntry(entry, join(subFolder, fileSystemEntry.name))
-              )
-            ).then(() => resolve())
-          );
-      } else {
-        (fileSystemEntry as FileSystemFileEntry)?.file((file) => {
-          addFile(file, subFolder);
-          resolve();
-        });
-      }
-    });
+  ): Promise<void> => {
+    const { promise, reject, resolve } = Promise.withResolvers<void>();
+
+    if (!fileSystemEntry) {
+      resolve();
+    } else if (fileSystemEntry.isDirectory) {
+      const reader = (
+        fileSystemEntry as FileSystemDirectoryEntry
+      ).createReader();
+      const readEntries = (): void =>
+        reader.readEntries((entries) => {
+          if (entries.length === 0) {
+            resolve();
+            return;
+          }
+
+          Promise.all(
+            entries.map((entry) =>
+              addEntry(entry, join(subFolder, fileSystemEntry.name))
+            )
+          ).then(readEntries, reject);
+        }, reject);
+
+      readEntries();
+    } else {
+      (fileSystemEntry as FileSystemFileEntry).file((file) => {
+        addFile(file, subFolder);
+        resolve();
+      }, reject);
+    }
+
+    return promise;
+  };
 
   if (files instanceof FileList) {
     [...files].forEach((file) => addFile(file));
@@ -242,8 +256,8 @@ export const getEventData = (
     (event as InputChangeEvent).target?.files || dataTransfer?.items || [];
   const text = dataTransfer?.getData("application/json");
 
-  if (Array.isArray(files)) {
-    files = [...(files as unknown as DataTransferItemList)].filter(
+  if (!(files instanceof FileList)) {
+    files = [...files].filter(
       (item) => !("kind" in item) || item.kind === "file"
     ) as unknown as DataTransferItemList;
   }
@@ -314,7 +328,11 @@ export const handleFileInputEvent = (
       // Failed to parse text data to JSON
     }
   } else {
-    createFileReaders(files, directory, callback).then(openTransferDialog);
+    createFileReaders(files, directory, callback)
+      .then(openTransferDialog)
+      .catch(() => {
+        // Ignore failure to read transferred files
+      });
   }
 };
 

@@ -32,12 +32,17 @@ export const addFileSystemHandle = async (
   mappedName: string,
   observer?: FileSystemObserver
 ): Promise<void> => {
-  if (!(await supportsIndexedDB())) return;
-
-  const db = await getKeyValStore();
   const dirPath = join(directory, mappedName);
+  if (observer) {
+    observers.get(dirPath)?.disconnect();
+    observers.set(dirPath, observer);
+  }
 
   try {
+    if (!(await supportsIndexedDB())) return;
+
+    const db = await getKeyValStore();
+
     await db.put(
       KEYVAL_STORE_NAME,
       {
@@ -46,8 +51,6 @@ export const addFileSystemHandle = async (
       },
       FS_HANDLES
     );
-
-    if (observer) observers.set(dirPath, observer);
   } catch {
     // Ignore errors storing handle
   }
@@ -56,19 +59,19 @@ export const addFileSystemHandle = async (
 export const removeFileSystemHandle = async (
   directory: string
 ): Promise<void> => {
-  if (!(await supportsIndexedDB())) return;
-
-  const { [directory]: _removedHandle, ...handles } =
-    await getFileSystemHandles();
-  const db = await getKeyValStore();
-
   try {
-    await db.put(KEYVAL_STORE_NAME, handles, FS_HANDLES);
+    if (!(await supportsIndexedDB())) return;
 
-    observers.get(directory)?.disconnect();
-    observers.delete(directory);
+    const { [directory]: _removedHandle, ...handles } =
+      await getFileSystemHandles();
+    const db = await getKeyValStore();
+
+    await db.put(KEYVAL_STORE_NAME, handles, FS_HANDLES);
   } catch {
     // Ignore errors storing handle
+  } finally {
+    observers.get(directory)?.disconnect();
+    observers.delete(directory);
   }
 };
 
@@ -124,22 +127,24 @@ export const resetStorage = (rootFs?: RootFileSystem): Promise<void> =>
     };
 
     if (window.indexedDB) {
-      import("idb").then(({ deleteDB }) => {
-        if (window.indexedDB.databases) {
-          window.indexedDB
-            .databases()
-            .then((databases) =>
-              databases
-                .filter(({ name }) => name && name !== "browserfs")
-                .forEach(({ name }) => deleteDB(name as string))
-            )
-            .then(clearFs)
-            .catch(clearFs);
-        } else {
-          KNOWN_IDB_DBS.forEach((name) => deleteDB(name));
-          clearFs();
-        }
-      });
+      import("idb")
+        .then(({ deleteDB }) => {
+          if (window.indexedDB.databases) {
+            window.indexedDB
+              .databases()
+              .then((databases) =>
+                databases
+                  .filter(({ name }) => name && name !== "browserfs")
+                  .forEach(({ name }) => deleteDB(name as string))
+              )
+              .then(clearFs)
+              .catch(clearFs);
+          } else {
+            KNOWN_IDB_DBS.forEach((name) => deleteDB(name));
+            clearFs();
+          }
+        })
+        .catch(clearFs);
     } else {
       clearFs();
     }

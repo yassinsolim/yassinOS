@@ -55,7 +55,7 @@ export type VantaWaves = {
 
 export type VantaObject = {
   WAVES: (settings: VantaWavesSettings) => VantaWaves;
-  current: VantaWaves;
+  current: VantaWaves | null;
 };
 
 declare global {

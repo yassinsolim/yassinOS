@@ -209,20 +209,35 @@ export const copyKeyMenuItems = (
   nsecHex?: string
 ): MenuItem[] => [
   {
-    action: () => navigator.clipboard?.writeText(nip19.npubEncode(hexKey)),
+    action: () => {
+      navigator.clipboard
+        ?.writeText(nip19.npubEncode(hexKey))
+        .catch(() => {
+          // Ignore failure to copy npub address
+        });
+    },
     label: "Copy npub address",
   },
   ...(nsecHex
     ? [
         {
-          action: () =>
-            navigator.clipboard?.writeText(nip19.nsecEncode(nsecHex)),
+          action: () => {
+            navigator.clipboard
+              ?.writeText(nip19.nsecEncode(nsecHex))
+              .catch(() => {
+                // Ignore failure to copy nsec address
+              });
+          },
           label: "Copy nsec address",
         },
       ]
     : [
         {
-          action: () => navigator.clipboard?.writeText(hexKey),
+          action: () => {
+            navigator.clipboard?.writeText(hexKey).catch(() => {
+              // Ignore failure to copy hex address
+            });
+          },
           label: "Copy hex address",
         },
       ]),
@@ -418,7 +433,7 @@ export const prettyChatTimestamp = (timestamp: number): string => {
   const dateTimestamp = date.getTime();
   const datePretty = date.toLocaleString("en-US", TIME_FORMAT);
 
-  if (dateTimestamp > today) return datePretty;
+  if (dateTimestamp >= today) return datePretty;
   if (dateTimestamp > yesterday) return `Yesterday at ${datePretty}`;
   if (dateTimestamp > today - 6 * MILLISECONDS_IN_DAY) {
     return date.toLocaleString("en-US", {

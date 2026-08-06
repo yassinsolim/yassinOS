@@ -115,7 +115,22 @@ const Metadata: FC = () => {
   }, [resetFaviconAndTitle]);
 
   useEffect(() => {
-    if (cursor) getCursor(cursor).then(setCustomCursor);
+    let canceled = false;
+
+    setCustomCursor("");
+    if (cursor) {
+      getCursor(cursor)
+        .then((cursorCss) => {
+          if (!canceled) setCustomCursor(cursorCss);
+        })
+        .catch(() => {
+          if (!canceled) setCustomCursor("");
+        });
+    }
+
+    return () => {
+      canceled = true;
+    };
   }, [cursor, getCursor]);
 
   return (
@@ -125,7 +140,7 @@ const Metadata: FC = () => {
         <link href={currentFavIcon} rel="icon" type={favIconMimeType} />
       )}
       <meta
-        content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, interactive-widget=resizes-content"
+        content="width=device-width, initial-scale=1, interactive-widget=resizes-content"
         name="viewport"
       />
       <meta content={description} name="description" />

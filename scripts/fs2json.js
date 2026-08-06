@@ -54,6 +54,8 @@ const fs2json = (dir) => {
           if (file) {
             const fullPath = join(walkDir, file);
 
+            // stat, not lstat: the v4 index has no symlink variant, so links
+            // must stay dereferenced into real file/directory entries.
             stat(fullPath, (statError, fileStat) => {
               if (statError) {
                 reject(statError);
@@ -65,18 +67,21 @@ const fs2json = (dir) => {
 
               if (fileStat.isSymbolicLink()) {
                 readlink(fullPath, (linkError, path) => {
-                  if (!linkError) {
-                    node[IDX_TARGET] = path;
-                    result.push(node);
-                    recur();
+                  if (linkError) {
+                    reject(linkError);
+                    return;
                   }
+
+                  node[IDX_TARGET] = path;
+                  result.push(node);
+                  recur();
                 });
               } else if (fileStat.isDirectory()) {
                 walk(fullPath).then((rest) => {
                   node[IDX_TARGET] = rest;
                   result.push(node);
                   recur();
-                });
+                }, reject);
               } else {
                 result.push(node);
                 recur();
@@ -94,21 +99,32 @@ const fs2json = (dir) => {
 
   console.info("Creating file tree ...");
 
-  return walk(dir).then((data) => {
-    console.info("Creating json ...");
+  return walk(dir).then(
+    (data) =>
+      new Promise((resolve, reject) => {
+        console.info("Creating json ...");
 
-    mkdir(dirname(outputPath), { recursive: true }, () =>
-      writeFile(
-        outputPath,
-        JSON.stringify({
-          fsroot: data,
-          size: totalSize,
-          version: VERSION,
-        }),
-        () => process.exit()
-      )
-    );
-  });
+        mkdir(dirname(outputPath), { recursive: true }, (mkdirError) => {
+          if (mkdirError) {
+            reject(mkdirError);
+            return;
+          }
+
+          writeFile(
+            outputPath,
+            JSON.stringify({
+              fsroot: data,
+              size: totalSize,
+              version: VERSION,
+            }),
+            (writeError) => (writeError ? reject(writeError) : resolve())
+          );
+        });
+      })
+  );
 };
 
-fs2json(resolvePath(argPath));
+fs2json(resolvePath(argPath)).catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

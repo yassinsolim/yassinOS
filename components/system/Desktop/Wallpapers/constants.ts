@@ -4,6 +4,27 @@ import {
 } from "components/system/Desktop/Wallpapers/types";
 import { type WallpaperFit } from "contexts/session/types";
 
+/**
+ * Wallpapers that load scripts asynchronously must not apply their result if
+ * the user has since picked a different one. Each run takes a generation and
+ * checks it before touching the DOM; tearing a wallpaper down invalidates any
+ * run still in flight.
+ */
+let wallpaperRunId = 0;
+
+export const nextWallpaperRun = (): number => {
+  wallpaperRunId += 1;
+
+  return wallpaperRunId;
+};
+
+export const isCurrentWallpaperRun = (runId: number): boolean =>
+  runId === wallpaperRunId;
+
+export const cancelWallpaperRun = (): void => {
+  wallpaperRunId += 1;
+};
+
 export const bgPositionSize: Record<WallpaperFit, string> = {
   center: "center center",
   fill: "center center / cover",

@@ -11,10 +11,12 @@ import {
 } from "components/apps/Portfolio/data";
 import AppContainer from "components/system/Apps/AppContainer";
 import { type ComponentProcessProps } from "components/system/Apps/RenderComponent";
+import { useProcesses } from "contexts/process";
 
 const RESUME_PATH = "/Users/Public/Desktop/Resume.pdf";
 
 const Portfolio: FC<ComponentProcessProps> = ({ id }) => {
+  const { open } = useProcesses();
   const openExternal = useCallback((href: string) => {
     window.open(href, "_blank", "noopener,noreferrer");
   }, []);
@@ -62,14 +64,16 @@ const Portfolio: FC<ComponentProcessProps> = ({ id }) => {
               </button>
               <button
                 className="pill"
-                onClick={() => openExternal(`mailto:${contact.email}`)}
+                onClick={() => {
+                  window.location.href = `mailto:${contact.email}`;
+                }}
                 type="button"
               >
                 {contact.email}
               </button>
               <button
                 className="pill"
-                onClick={() => openExternal(RESUME_PATH)}
+                onClick={() => open("PDF", { url: RESUME_PATH })}
                 type="button"
               >
                 View Resume
