@@ -81,6 +81,27 @@ const StyledPDF = styled.div`
     top: 0;
   }
 
+  /* Link annotations. The container ignores pointer events so text selection
+     still works everywhere except directly over a link. */
+  .annotationLayer {
+    inset: 0;
+    pointer-events: none;
+    position: absolute;
+    transform-origin: 0 0;
+    z-index: 1;
+  }
+
+  .annotationLayer section {
+    pointer-events: auto;
+    position: absolute;
+  }
+
+  .annotationLayer .linkAnnotation > a {
+    display: block;
+    height: 100%;
+    width: 100%;
+  }
+
   /* stylelint-enable selector-class-pattern */
 
   &.drop {
