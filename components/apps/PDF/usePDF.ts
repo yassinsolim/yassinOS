@@ -11,7 +11,10 @@ import {
   type PDFDocumentProxy,
 } from "pdfjs-dist/types/src/display/api";
 import type * as PdfjsLib from "pdfjs-dist";
-import { type MetadataInfo } from "components/apps/PDF/types";
+import {
+  type MetadataInfo,
+  type PdfAnnotation,
+} from "components/apps/PDF/types";
 import useTitle from "components/system/Window/useTitle";
 import { useFileSystem } from "contexts/fileSystem";
 import { useProcesses } from "contexts/process";
@@ -24,6 +27,47 @@ export const scales = [
 ];
 
 const CANVAS_MARGIN_PX = 4;
+
+/** Schemes a PDF is allowed to link out to. */
+const ALLOWED_LINK_PROTOCOLS: Record<string, true> = {
+  "http:": true,
+  "https:": true,
+  "mailto:": true,
+  "tel:": true,
+};
+
+/**
+ * Minimal link service for the annotation layer. pdf.js hands it each link
+ * annotation and expects it to attach the href, which is also the right place
+ * to refuse anything that is not an ordinary web or contact link.
+ */
+const linkService = {
+  // pdf.js hands us the anchor it created and expects it to be configured in
+  // place, so mutating the parameter is the API contract here.
+  /* eslint-disable no-param-reassign */
+  addLinkAttributes: (link: HTMLAnchorElement, url: string): void => {
+    const safeUrl = window.pdfjsLib?.createValidAbsoluteUrl(url, undefined, {
+      addDefaultProtocol: true,
+    });
+
+    if (!safeUrl || !ALLOWED_LINK_PROTOCOLS[safeUrl.protocol]) return;
+
+    link.href = safeUrl.href;
+    link.rel = "noopener noreferrer";
+
+    // The desktop runs inside an iframe, so web links have to escape it.
+    // mailto:/tel: stay in place so the OS hands them to the right handler.
+    if (safeUrl.protocol === "http:" || safeUrl.protocol === "https:") {
+      link.target = "_blank";
+    }
+  },
+  /* eslint-enable no-param-reassign */
+  externalLinkEnabled: true,
+  externalLinkRel: "noopener noreferrer",
+  getAnchorUrl: (url: string): string => url,
+  getDestinationHash: (): string => "#",
+  goToDestination: (): void => undefined,
+};
 
 /**
  * Scale so the whole page is visible, growing past 100% when there is room.
@@ -148,6 +192,28 @@ const usePDF = (
         textContentSource: await page.getTextContent(),
         viewport,
       }).promise;
+
+      // Link annotations, above the text layer so clicks reach them. Without
+      // this the PDF's hyperlinks are dead.
+      const annotationLayer = document.createElement("div");
+
+      annotationLayer.className = "annotationLayer";
+      annotationLayer.style.setProperty("--scale-factor", `${viewport.scale}`);
+      container.append(annotationLayer);
+
+      // The vendored build types this loosely; name the shape at the boundary
+      // so the layer call stays type-checked.
+      const annotations = (await page.getAnnotations()) as PdfAnnotation[];
+
+      await new pdfjsLib.AnnotationLayer({
+        div: annotationLayer,
+        page,
+        viewport: viewport.clone({ dontFlip: true }),
+      }).render({
+        annotations,
+        linkService,
+        renderForms: false,
+      });
 
       return container;
     },
