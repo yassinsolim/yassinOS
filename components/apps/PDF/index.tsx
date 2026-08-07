@@ -13,11 +13,11 @@ const PDF: FC<ComponentProcessProps> = ({ id }) => {
     <>
       <StyledPDF ref={containerRef} {...useFileDrop({ id })}>
         <ol className="pages">
-          {usePDF(id, containerRef).map((canvas, index) => (
+          {usePDF(id, containerRef).map((element, index) => (
             <Page
               // eslint-disable-next-line react/no-array-index-key
               key={index}
-              canvas={canvas}
+              element={element}
               id={id}
               page={index + 1}
             />

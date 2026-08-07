@@ -2,12 +2,12 @@ import { useRef, useEffect, memo } from "react";
 import { useProcesses } from "contexts/process";
 
 type PageProps = {
-  canvas: HTMLCanvasElement;
+  element: HTMLDivElement;
   id: string;
   page: number;
 };
 
-const Page: FC<PageProps> = ({ canvas, id, page }) => {
+const Page: FC<PageProps> = ({ element, id, page }) => {
   const containerRef = useRef<HTMLLIElement | null>(null);
   const {
     argument,
@@ -16,10 +16,10 @@ const Page: FC<PageProps> = ({ canvas, id, page }) => {
   const { componentWindow } = process || {};
 
   useEffect(() => {
-    if (canvas) containerRef.current?.append(canvas);
+    if (element) containerRef.current?.append(element);
 
-    return () => canvas?.remove();
-  }, [canvas]);
+    return () => element?.remove();
+  }, [element]);
 
   useEffect(() => {
     const container = containerRef.current;

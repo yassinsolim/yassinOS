@@ -66,7 +66,7 @@ const getInitialScale = (
 const usePDF = (
   id: string,
   containerRef: RefObject<HTMLDivElement | null>
-): HTMLCanvasElement[] => {
+): HTMLDivElement[] => {
   const { readFile } = useFileSystem();
   const {
     argument,
@@ -74,13 +74,17 @@ const usePDF = (
     url: setUrl,
   } = useProcesses();
   const { libs = [], scale, url: processUrl } = process || {};
-  const [pages, setPages] = useState<HTMLCanvasElement[]>([]);
+  const [pages, setPages] = useState<HTMLDivElement[]>([]);
   const pdfWorker = useRef<PDFWorker | null>(null);
   const renderPage = useCallback(
     async (
       pageNumber: number,
       doc: PDFDocumentProxy
-    ): Promise<HTMLCanvasElement> => {
+    ): Promise<HTMLDivElement> => {
+      const { pdfjsLib } = window;
+
+      if (!pdfjsLib) throw new Error("PDF.js is not loaded.");
+
       const canvas = document.createElement("canvas");
       const canvasContext = canvas.getContext(
         "2d",
@@ -105,12 +109,47 @@ const usePDF = (
         viewport = page.getViewport({ scale: initialScale });
       }
 
-      canvas.height = viewport.height;
-      canvas.width = viewport.width;
+      // Render at device resolution, then size down in CSS, so the page is
+      // sharp on high-DPI screens instead of an upscaled bitmap.
+      const pixelRatio = window.devicePixelRatio || 1;
 
-      await page.render({ canvas, canvasContext, viewport }).promise;
+      canvas.height = Math.floor(viewport.height * pixelRatio);
+      canvas.width = Math.floor(viewport.width * pixelRatio);
+      canvas.style.height = `${viewport.height}px`;
+      canvas.style.width = `${viewport.width}px`;
 
-      return canvas;
+      await page.render({
+        canvas,
+        canvasContext,
+        transform:
+          pixelRatio === 1 ? undefined : [pixelRatio, 0, 0, pixelRatio, 0, 0],
+        viewport,
+      }).promise;
+
+      const container = document.createElement("div");
+
+      container.className = "page";
+      container.style.height = `${viewport.height}px`;
+      container.style.width = `${viewport.width}px`;
+      container.append(canvas);
+
+      // The PDF's own text, positioned over the canvas, so it can be selected,
+      // copied and searched rather than only looked at.
+      const textLayer = document.createElement("div");
+
+      textLayer.className = "textLayer";
+      // pdf.js positions the spans in scaled units and reads this back out of
+      // CSS; without it every glyph lands in the wrong place.
+      textLayer.style.setProperty("--scale-factor", `${viewport.scale}`);
+      container.append(textLayer);
+
+      await pdfjsLib.renderTextLayer({
+        container: textLayer,
+        textContentSource: await page.getTextContent(),
+        viewport,
+      }).promise;
+
+      return container;
     },
     [argument, containerRef, id, scale]
   );
