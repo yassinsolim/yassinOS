@@ -222,7 +222,7 @@ const directory: Processes = {
       width: 1120,
     },
     icon: "/System/Icons/portfolio.png",
-    title: "portfolio.exe",
+    title: "Portfolio",
   },
   Properties: {
     Component: dynamic(() => import("components/system/Dialogs/Properties")),

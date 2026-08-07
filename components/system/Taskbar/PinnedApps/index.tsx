@@ -16,7 +16,7 @@ const PINNED_APPS = [
   {
     icon: "/System/Icons/portfolio.png",
     id: "Portfolio",
-    title: "portfolio.exe",
+    title: "Portfolio",
   },
 ];
 
