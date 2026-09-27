@@ -318,7 +318,7 @@ export const experience = [
       "Added native Apple Silicon development via RoboStack, and wrote the arm's embedded C/C++ motion control on Arduino (1 kHz PID with anti-windup, encoder interrupts, filtered sensor input).",
     ],
     location: "Calgary, AB",
-    role: "Software Co-Lead",
+    role: "Software Lead",
     tech: ["ROS 2", "C++", "Python", "Docker", "GitHub Actions", "Arduino"],
     timeline: "Nov 2024 - Present",
   },
