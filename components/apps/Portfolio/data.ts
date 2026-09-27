@@ -149,7 +149,7 @@ export const projects = [
     highlights: [
       "Source-style kinematic movement controller running a unit-tested, fixed 128 Hz simulation with surf, ground, and air handling, ramp clipping, and slide movement.",
       "Map manifest system with BVH collision against static triangle meshes, plus a separate render scene and camera for the first-person viewmodel pipeline.",
-      "Server-authoritative WebSocket netcode for players and bots, hardened with CSP, HSTS, and server-side session validation, plus a run timer and online leaderboard.",
+      "Real-time multiplayer over Supabase Realtime, with a host player's client running bots and hit detection, plus a run timer and online leaderboard.",
     ],
     name: "WebStrafe",
     repo: "https://github.com/yassinsolim/WebStrafe",
@@ -160,8 +160,7 @@ export const projects = [
       "TypeScript",
       "Three.js",
       "Vite",
-      "Node.js",
-      "WebSockets",
+      "Supabase Realtime",
       "BVH Collision",
     ],
     timeline: "2026",
