@@ -16,6 +16,7 @@ import {
 } from "utils/constants";
 import { createOffscreenCanvas } from "utils/functions";
 import { useMenuPreload } from "hooks/useMenuPreload";
+import { isParentPaused, onParentPauseChange } from "utils/embedBridge";
 
 type ClockWorkerResponse = LocaleTimeDate | "source";
 
@@ -95,6 +96,10 @@ const Clock: FC<ClockProps> = ({
     ({ data, target: clockWorker }: MessageEvent<ClockWorkerResponse>) => {
       if (data === "source") {
         (clockWorker as Worker).postMessage(clockSource);
+
+        if (isParentPaused()) {
+          (clockWorker as Worker).postMessage({ paused: true });
+        }
       } else {
         setNow((currentNow) =>
           !offScreenClockCanvas.current || currentNow.date !== data.date
@@ -175,6 +180,15 @@ const Clock: FC<ClockProps> = ({
     offScreenClockCanvas.current = undefined;
     // eslint-disable-next-line react-hooks-addons/no-unused-deps
   }, [clockSource]);
+
+  // no ticking while the embedding page covers us
+  useEffect(
+    () =>
+      onParentPauseChange((paused) =>
+        currentWorker.current?.postMessage({ paused })
+      ),
+    [currentWorker]
+  );
 
   useEffect(() => {
     if (supportsOffscreenCanvas) {

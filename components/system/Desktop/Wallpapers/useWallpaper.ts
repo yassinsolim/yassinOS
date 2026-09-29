@@ -22,6 +22,12 @@ import { useFileSystem } from "contexts/fileSystem";
 import { useSession } from "contexts/session";
 import useWorker from "hooks/useWorker";
 import {
+  SPAN_WALLPAPER,
+  isSpanWallpaper,
+  loadSpanWallpaper,
+} from "utils/embed";
+import { isParentPaused, onParentPauseChange } from "utils/embedBridge";
+import {
   DEFAULT_WALLPAPER,
   IMAGE_FILE_EXTENSIONS,
   MILLISECONDS_IN_MINUTE,
@@ -51,8 +57,6 @@ let slideshowFiles: Record<string, string[]> = {};
 const EMBED_LOW = { devicePixelRatio: 0.5, maxFps: 30 };
 const isLowQualityEmbed = (): boolean =>
   getSearchParam("embed") === "1" && getSearchParam("quality") === "low";
-const PAUSE_MESSAGE = "yassinos:pause";
-const RESUME_MESSAGE = "yassinos:resume";
 
 const useWallpaper = (
   desktopRef: React.RefObject<HTMLElement | null>
@@ -67,17 +71,19 @@ const useWallpaper = (
     [wallpaperImage]
   );
   const isAlt = wallpaperImage.endsWith(" ALT");
+  // the room's span image replaces the animated wallpaper, so no worker
   const wallpaperWorker = useWorker<void>(
-    sessionLoaded ? WALLPAPER_WORKERS[wallpaperName] : undefined
+    sessionLoaded && !isSpanWallpaper()
+      ? WALLPAPER_WORKERS[wallpaperName]
+      : undefined
   );
   const wallpaperTimerRef = useRef(0);
-  // the parent page asked for a pause (it covers us, like the portfolio's race)
-  const parentPausedRef = useRef(false);
   const sendFramePacing = useCallback((): void => {
     wallpaperWorker.current?.postMessage({
       framePacing: {
         maxFps: isLowQualityEmbed() ? EMBED_LOW.maxFps : 0,
-        paused: document.hidden || parentPausedRef.current,
+        // the parent page asked for a pause (it covers us, like the portfolio's race)
+        paused: document.hidden || isParentPaused(),
       },
     });
   }, [wallpaperWorker]);
@@ -269,24 +275,15 @@ const useWallpaper = (
   );
 
   // Nothing to animate while hidden, or while the parent page covers us
+  // (yassinos:pause and yassinos:resume, checked by the embed bridge)
   useEffect(() => {
-    const onMessage = ({ data, source }: MessageEvent<unknown>): void => {
-      if (window.parent === window || source !== window.parent) return;
-
-      const type = (data as { type?: unknown } | null)?.type;
-
-      if (type !== PAUSE_MESSAGE && type !== RESUME_MESSAGE) return;
-
-      parentPausedRef.current = type === PAUSE_MESSAGE;
-      sendFramePacing();
-    };
+    const stopListening = onParentPauseChange(sendFramePacing);
 
     document.addEventListener("visibilitychange", sendFramePacing);
-    window.addEventListener("message", onMessage);
 
     return () => {
       document.removeEventListener("visibilitychange", sendFramePacing);
-      window.removeEventListener("message", onMessage);
+      stopListening();
     };
   }, [sendFramePacing]);
   const getAllImages = useCallback(
@@ -529,6 +526,29 @@ const useWallpaper = (
     writeFile,
   ]);
 
+  // the part of the room's span image behind the main screen, painted once
+  // it's decoded
+  const loadSpanWallpaperBackground = useCallback((): void => {
+    if (
+      window.DEBUG_DISABLE_WALLPAPER ||
+      getSearchParam("disableWallpaper") === "true"
+    ) {
+      return;
+    }
+
+    loadSpanWallpaper().then(() => {
+      const { style } = document.documentElement;
+
+      style.removeProperty("--background-blend-mode");
+      style.setProperty(
+        "--after-background",
+        `url("${SPAN_WALLPAPER.url}") ${SPAN_WALLPAPER.position} / ${SPAN_WALLPAPER.size} no-repeat ${colors.background}`
+      );
+      style.setProperty("--after-background-opacity", "1");
+      style.setProperty("--before-background-opacity", "0");
+    });
+  }, [colors.background]);
+
   useEffect(() => {
     if (sessionLoaded) {
       if (wallpaperTimerRef.current) {
@@ -536,13 +556,24 @@ const useWallpaper = (
         wallpaperTimerRef.current = 0;
       }
 
-      if (wallpaperName && !WALLPAPER_WORKER_NAMES.includes(wallpaperName)) {
+      if (isSpanWallpaper()) {
+        loadSpanWallpaperBackground();
+      } else if (
+        wallpaperName &&
+        !WALLPAPER_WORKER_NAMES.includes(wallpaperName)
+      ) {
         loadFileWallpaper().catch(loadWallpaper);
       } else {
         loadWallpaper();
       }
     }
-  }, [loadFileWallpaper, loadWallpaper, sessionLoaded, wallpaperName]);
+  }, [
+    loadFileWallpaper,
+    loadSpanWallpaperBackground,
+    loadWallpaper,
+    sessionLoaded,
+    wallpaperName,
+  ]);
 
   useEffect(() => {
     const resizeListener = (): void => {

@@ -18,6 +18,7 @@ import { useProcesses } from "contexts/process";
 import { useSession } from "contexts/session";
 import { useProcessesRef } from "hooks/useProcessesRef";
 import { useWebGPUCheck } from "hooks/useWebGPUCheck";
+import { isSpanWallpaper } from "utils/embed";
 import {
   DESKTOP_PATH,
   FOLDER_ICON,
@@ -431,46 +432,51 @@ const useFolderContextMenu = (
           ...(isDesktop
             ? [
                 MENU_SEPERATOR,
-                {
-                  label: "Background",
-                  menu: WALLPAPER_MENU.filter(
-                    ({ requiresWebGPU }) => !requiresWebGPU || hasWebGPU
-                  ).reduce<MenuItem[]>(
-                    (menu, { hasAlt = true, id, name }) => [
-                      ...menu,
+                // the room's span image is fixed, nothing to pick
+                ...(isSpanWallpaper()
+                  ? []
+                  : [
                       {
-                        action: () => {
-                          if (isMusicVisualizationRunning) {
-                            stopGlobalMusicVisualization();
-                          }
-                          setSessionWallpaper(
-                            `${id}${
-                              hasAlt &&
-                              wallpaperImage.startsWith(id) &&
-                              !wallpaperImage.endsWith(" ALT")
-                                ? " ALT"
-                                : ""
-                            }`
-                          );
-                        },
-                        label: name || id,
-                        toggle: hasAlt
-                          ? wallpaperImage.startsWith(id)
-                          : wallpaperImage === id,
+                        label: "Background",
+                        menu: WALLPAPER_MENU.filter(
+                          ({ requiresWebGPU }) => !requiresWebGPU || hasWebGPU
+                        ).reduce<MenuItem[]>(
+                          (menu, { hasAlt = true, id, name }) => [
+                            ...menu,
+                            {
+                              action: () => {
+                                if (isMusicVisualizationRunning) {
+                                  stopGlobalMusicVisualization();
+                                }
+                                setSessionWallpaper(
+                                  `${id}${
+                                    hasAlt &&
+                                    wallpaperImage.startsWith(id) &&
+                                    !wallpaperImage.endsWith(" ALT")
+                                      ? " ALT"
+                                      : ""
+                                  }`
+                                );
+                              },
+                              label: name || id,
+                              toggle: hasAlt
+                                ? wallpaperImage.startsWith(id)
+                                : wallpaperImage === id,
+                            },
+                          ],
+                          isMusicVisualizationRunning
+                            ? [
+                                {
+                                  action: stopGlobalMusicVisualization,
+                                  checked: true,
+                                  label: "Music Visualization",
+                                },
+                                MENU_SEPERATOR,
+                              ]
+                            : []
+                        ),
                       },
-                    ],
-                    isMusicVisualizationRunning
-                      ? [
-                          {
-                            action: stopGlobalMusicVisualization,
-                            checked: true,
-                            label: "Music Visualization",
-                          },
-                          MENU_SEPERATOR,
-                        ]
-                      : []
-                  ),
-                },
+                    ]),
                 ...(canCapture
                   ? [
                       {

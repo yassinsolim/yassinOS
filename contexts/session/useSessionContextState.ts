@@ -41,6 +41,7 @@ import {
 } from "utils/functions";
 import { getShortcutInfo } from "components/system/Files/FileEntry/functions";
 import { WALLPAPER_PATHS } from "components/system/Desktop/Wallpapers/constants";
+import { isSpanWallpaper } from "utils/embed";
 
 const DEFAULT_SESSION = (
   typeof window === "object" && "DEBUG_DEFAULT_SESSION" in window
@@ -273,7 +274,8 @@ const useSessionContextState = (): SessionContextState => {
           const sessionWallpaperImage =
             session.wallpaperImage || DEFAULT_WALLPAPER;
 
-          if (sessionWallpaperImage in WALLPAPER_PATHS) {
+          // the room's span image stands in for it, nothing to preload
+          if (sessionWallpaperImage in WALLPAPER_PATHS && !isSpanWallpaper()) {
             WALLPAPER_PATHS[sessionWallpaperImage]().then(({ libs }) =>
               preloadLibs(libs)
             );
