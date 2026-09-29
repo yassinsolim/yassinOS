@@ -1,3 +1,5 @@
+// first, so pause and frame cap messages never reach the wallpaper
+import "components/system/Desktop/Wallpapers/framePacing";
 import { ROOT_PATH, libs } from "components/system/Desktop/Wallpapers/hexells";
 import { type OffscreenRenderProps } from "components/system/Desktop/Wallpapers/types";
 

@@ -1,3 +1,5 @@
+// first, so pause and frame cap messages never reach the wallpaper
+import "components/system/Desktop/Wallpapers/framePacing";
 import { libs } from "components/system/Desktop/Wallpapers/ShaderToy/CoastalLandscape";
 import { type OffscreenRenderProps } from "components/system/Desktop/Wallpapers/types";
 

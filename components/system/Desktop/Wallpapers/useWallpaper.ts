@@ -46,6 +46,14 @@ import {
 
 let slideshowFiles: Record<string, string[]> = {};
 
+// embedded (the portfolio's monitor passes ?embed=1&quality=low|high), a low
+// quality wallpaper renders at half resolution and 30 fps
+const EMBED_LOW = { devicePixelRatio: 0.5, maxFps: 30 };
+const isLowQualityEmbed = (): boolean =>
+  getSearchParam("embed") === "1" && getSearchParam("quality") === "low";
+const PAUSE_MESSAGE = "yassinos:pause";
+const RESUME_MESSAGE = "yassinos:resume";
+
 const useWallpaper = (
   desktopRef: React.RefObject<HTMLElement | null>
 ): void => {
@@ -63,6 +71,16 @@ const useWallpaper = (
     sessionLoaded ? WALLPAPER_WORKERS[wallpaperName] : undefined
   );
   const wallpaperTimerRef = useRef(0);
+  // the parent page asked for a pause (it covers us, like the portfolio's race)
+  const parentPausedRef = useRef(false);
+  const sendFramePacing = useCallback((): void => {
+    wallpaperWorker.current?.postMessage({
+      framePacing: {
+        maxFps: isLowQualityEmbed() ? EMBED_LOW.maxFps : 0,
+        paused: document.hidden || parentPausedRef.current,
+      },
+    });
+  }, [wallpaperWorker]);
   const failedOffscreenContext = useRef(false);
   const resetWallpaper = useCallback(
     (keepCanvas?: boolean): void => {
@@ -153,10 +171,16 @@ const useWallpaper = (
         typeof window.OffscreenCanvas === "function" &&
         wallpaperWorker.current
       ) {
-        const workerConfig = { config, devicePixelRatio: 1 };
+        const workerConfig = {
+          config,
+          devicePixelRatio: isLowQualityEmbed()
+            ? EMBED_LOW.devicePixelRatio
+            : 1,
+        };
 
         if (keepCanvas) {
           wallpaperWorker.current.postMessage(workerConfig);
+          sendFramePacing();
         } else {
           const offscreen = createOffscreenCanvas(desktopRef.current);
 
@@ -164,6 +188,7 @@ const useWallpaper = (
             { canvas: offscreen, ...workerConfig },
             [offscreen]
           );
+          sendFramePacing();
 
           if (wallpaperName === "STABLE_DIFFUSION") {
             const loadingStatus = document.createElement("div");
@@ -235,12 +260,35 @@ const useWallpaper = (
       isAlt,
       readFile,
       resetWallpaper,
+      sendFramePacing,
       setWallpaper,
       wallpaperImage,
       wallpaperName,
       wallpaperWorker,
     ]
   );
+
+  // Nothing to animate while hidden, or while the parent page covers us
+  useEffect(() => {
+    const onMessage = ({ data, source }: MessageEvent<unknown>): void => {
+      if (window.parent === window || source !== window.parent) return;
+
+      const type = (data as { type?: unknown } | null)?.type;
+
+      if (type !== PAUSE_MESSAGE && type !== RESUME_MESSAGE) return;
+
+      parentPausedRef.current = type === PAUSE_MESSAGE;
+      sendFramePacing();
+    };
+
+    document.addEventListener("visibilitychange", sendFramePacing);
+    window.addEventListener("message", onMessage);
+
+    return () => {
+      document.removeEventListener("visibilitychange", sendFramePacing);
+      window.removeEventListener("message", onMessage);
+    };
+  }, [sendFramePacing]);
   const getAllImages = useCallback(
     async (baseDirectory: string): Promise<string[]> =>
       (await readdir(baseDirectory)).reduce<Promise<string[]>>(
