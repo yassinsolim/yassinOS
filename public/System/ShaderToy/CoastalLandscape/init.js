@@ -53,8 +53,24 @@ globalThis.effectInit = (canvas) => {
   ShaderToy.prototype.startRendering = function () {
     var me = this;
 
-    function renderLoop2() {
-      setTimeout(renderLoop2, 1000 / 60);
+    // animation frames where there are any, so the wallpaper worker's frame
+    // pacing (pause, 30 fps cap) applies to this one too; never above 60 fps
+    var lastFrame = 0;
+    function nextFrame() {
+      if (typeof requestAnimationFrame === "function") {
+        requestAnimationFrame(renderLoop2);
+      } else {
+        setTimeout(renderLoop2, 1000 / 60);
+      }
+    }
+
+    function renderLoop2(frameTime) {
+      nextFrame();
+
+      if (frameTime !== undefined) {
+        if (frameTime - lastFrame < 1000 / 60 - 1) return;
+        lastFrame = frameTime;
+      }
 
       if (me.mIsPaused && !me.mForceFrame) {
         me.mEffect.UpdateInputs(0, false);
