@@ -344,7 +344,7 @@ const useWallpaper = (
               : "[]"
           )
         );
-        updateFolder(PICTURES_FOLDER, SLIDESHOW_FILE);
+        await updateFolder(PICTURES_FOLDER, SLIDESHOW_FILE);
       }
 
       slideshowFiles = {
