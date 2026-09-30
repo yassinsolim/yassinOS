@@ -51,6 +51,7 @@ export type SessionData = {
   views: Views;
   wallpaperFit: WallpaperFit;
   wallpaperImage: string;
+  wallpaperVersion?: number;
   windowStates: WindowStates;
 };
 

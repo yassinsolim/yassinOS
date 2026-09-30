@@ -29,6 +29,8 @@ const IGNORE_PATHS = [
   "Users/Public/Icons",
   "Users/Public/Pictures/Blog",
 ];
+// served for yassin.app's room, not part of the desktop's file system
+const SKIP_PATHS = new Set([join(PUBLIC_PATH, "embed")]);
 
 const indexData = [];
 
@@ -74,6 +76,9 @@ const createSearchIndex = (path) => {
     }
 
     const fullPath = join(path, entry);
+
+    if (SKIP_PATHS.has(fullPath)) return;
+
     const stats = statSync(fullPath);
 
     if (stats.isDirectory()) {

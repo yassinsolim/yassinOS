@@ -3,6 +3,7 @@ import { getProcessByFileExtension } from "components/system/Files/FileEntry/fun
 import { useFileSystem } from "contexts/fileSystem";
 import { useProcesses } from "contexts/process";
 import processDirectory from "contexts/process/directory";
+import { isMainDisplay } from "utils/embed";
 import { getExtension, getSearchParam } from "utils/functions";
 
 const isBrowserUrl = (url: string): boolean =>
@@ -10,10 +11,53 @@ const isBrowserUrl = (url: string): boolean =>
   url.startsWith("https://") ||
   url.startsWith("chrome://");
 
+// the room's main screen starts on a clean desktop, its parent opens apps
 const shouldSkipAutoLaunch = (): boolean =>
   typeof window !== "undefined" &&
-  "__E2E_DISABLE_AUTOLAUNCH" in window &&
-  Boolean(window.__E2E_DISABLE_AUTOLAUNCH);
+  (("__E2E_DISABLE_AUTOLAUNCH" in window &&
+    Boolean(window.__E2E_DISABLE_AUTOLAUNCH)) ||
+    isMainDisplay());
+
+// an app name the way ?app= takes it (any case), dialogs excluded
+export const resolveAppName = (app: string): string | undefined =>
+  Object.keys(processDirectory).find(
+    (name) =>
+      !processDirectory[name].dialogProcess &&
+      name.toLowerCase() === app.toLowerCase()
+  );
+
+type AppOpener = {
+  exists: (path: string) => Promise<boolean>;
+  open: ReturnType<typeof useProcesses>["open"];
+};
+
+// opens a process like ?app= does: the url is only passed on if it exists (or
+// is a web url for the Browser), and File Explorer needs one that exists
+export const openApp = async (
+  processId: string,
+  url: string,
+  { exists, open }: AppOpener,
+  isStale: () => boolean = () => false
+): Promise<boolean> => {
+  let urlExists = false;
+
+  if (url) {
+    try {
+      urlExists =
+        (processId === "Browser" && isBrowserUrl(url)) || (await exists(url));
+    } catch {
+      // Ignore error checking if url exists
+    }
+  }
+
+  if (isStale() || (processId === "FileExplorer" && url && !urlExists)) {
+    return false;
+  }
+
+  open(processId, urlExists ? { url } : undefined);
+
+  return true;
+};
 
 const useUrlLoader = (): void => {
   const { exists, fs, stat } = useFileSystem();
@@ -42,42 +86,21 @@ const useUrlLoader = (): void => {
     const isStale = (): boolean =>
       runId !== runIdRef.current || unmountedRef.current;
 
-    const loadInitialApp = async (initialApp: string): Promise<boolean> => {
+    const loadInitialApp = async (initialApp?: string): Promise<boolean> => {
       if (!initialApp) return false;
 
-      let urlExists = false;
+      const opened = await openApp(initialApp, url, { exists, open }, isStale);
 
-      if (url) {
-        try {
-          urlExists =
-            (initialApp === "Browser" && isBrowserUrl(url)) ||
-            (await exists(url));
-        } catch {
-          // Ignore error checking if url exists
-        }
-      }
+      if (opened) openedInitialAppRef.current = true;
 
-      if (isStale() || (initialApp === "FileExplorer" && url && !urlExists)) {
-        return false;
-      }
-
-      open(initialApp, urlExists ? { url } : undefined);
-      openedInitialAppRef.current = true;
-
-      return true;
+      return opened;
     };
 
     const loadUrl = async (): Promise<void> => {
       let openedApp = false;
 
       if (app) {
-        const lcAppNames = Object.fromEntries(
-          Object.entries(processDirectory)
-            .filter(([, { dialogProcess }]) => !dialogProcess)
-            .map(([name]) => [name.toLowerCase(), name])
-        );
-
-        openedApp = await loadInitialApp(lcAppNames[app.toLowerCase()]);
+        openedApp = await loadInitialApp(resolveAppName(app));
       } else if (url) {
         if (isBrowserUrl(url)) {
           openedApp = await loadInitialApp("Browser");

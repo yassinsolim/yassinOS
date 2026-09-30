@@ -28,10 +28,12 @@ import {
   DEFAULT_WALLPAPER_FIT,
   DESKTOP_PATH,
   MILLISECONDS_IN_HOUR,
+  OLD_DEFAULT_WALLPAPER,
   SESSION_FILE,
   SHORTCUT_EXTENSION,
   SYSTEM_FILES,
   TRANSITIONS_IN_MILLISECONDS,
+  WALLPAPER_VERSION,
 } from "utils/constants";
 import {
   getExtension,
@@ -41,6 +43,7 @@ import {
 } from "utils/functions";
 import { getShortcutInfo } from "components/system/Files/FileEntry/functions";
 import { WALLPAPER_PATHS } from "components/system/Desktop/Wallpapers/constants";
+import { isSpanWallpaper } from "utils/embed";
 
 const DEFAULT_SESSION = (
   typeof window === "object" && "DEBUG_DEFAULT_SESSION" in window
@@ -226,6 +229,7 @@ const useSessionContextState = (): SessionContextState => {
             views,
             wallpaperFit,
             wallpaperImage,
+            wallpaperVersion: WALLPAPER_VERSION,
             windowStates,
           }),
           true
@@ -270,10 +274,16 @@ const useSessionContextState = (): SessionContextState => {
             session = DEFAULT_SESSION;
           }
 
+          // a session saved before the room's wallpaper with the old default
+          // never picked it, so it gets the new default
+          const keepsWallpaper =
+            Boolean(session.wallpaperVersion) ||
+            session.wallpaperImage !== OLD_DEFAULT_WALLPAPER;
           const sessionWallpaperImage =
-            session.wallpaperImage || DEFAULT_WALLPAPER;
+            (keepsWallpaper && session.wallpaperImage) || DEFAULT_WALLPAPER;
 
-          if (sessionWallpaperImage in WALLPAPER_PATHS) {
+          // the room's span image stands in for it, nothing to preload
+          if (sessionWallpaperImage in WALLPAPER_PATHS && !isSpanWallpaper()) {
             WALLPAPER_PATHS[sessionWallpaperImage]().then(({ libs }) =>
               preloadLibs(libs)
             );
@@ -283,7 +293,7 @@ const useSessionContextState = (): SessionContextState => {
           if (session.cursor) setCursor(session.cursor);
           if (session.aiEnabled) setAiEnabled(session.aiEnabled);
           if (session.themeName) setThemeName(session.themeName);
-          if (session.wallpaperImage) {
+          if (session.wallpaperImage && keepsWallpaper) {
             setWallpaper(session.wallpaperImage, session.wallpaperFit);
           }
           if (

@@ -2,6 +2,7 @@ import { memo } from "react";
 import AppsLoader from "components/system/Apps/AppsLoader";
 import Desktop from "components/system/Desktop";
 import Taskbar from "components/system/Taskbar";
+import useEmbedBridge from "hooks/useEmbedBridge";
 import useGlobalErrorHandler from "hooks/useGlobalErrorHandler";
 import useGlobalKeyboardShortcuts from "hooks/useGlobalKeyboardShortcuts";
 import useIFrameFocuser from "hooks/useIFrameFocuser";
@@ -12,6 +13,7 @@ const Index = (): React.ReactElement => {
   useUrlLoader();
   useGlobalKeyboardShortcuts();
   useGlobalErrorHandler();
+  useEmbedBridge();
 
   return (
     <Desktop>

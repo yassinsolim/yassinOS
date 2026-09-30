@@ -46,6 +46,21 @@ const nextConfig = {
         },
       ],
     },
+    // the room kit yassin.app loads (theme, span wallpaper, poster). public
+    // files fetched without credentials, so any origin may read them
+    {
+      source: "/embed/:path*",
+      headers: [
+        {
+          key: "Access-Control-Allow-Origin",
+          value: "*",
+        },
+        {
+          key: "Cross-Origin-Resource-Policy",
+          value: "cross-origin",
+        },
+      ],
+    },
   ],
   output: "export",
   productionBrowserSourceMaps: false,

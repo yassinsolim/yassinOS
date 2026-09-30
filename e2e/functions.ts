@@ -508,6 +508,18 @@ export const backgroundIsUrl = async ({ page }: TestProps): Promise<void> =>
     ).toBeTruthy()
   ).toPass();
 
+// the default wallpaper: the room's still image
+export const backgroundIsRoom = async ({ page }: TestProps): Promise<void> =>
+  expect(async () =>
+    expect(
+      await page.evaluate(() =>
+        window
+          .getComputedStyle(document.documentElement)
+          .getPropertyValue("--after-background")
+      )
+    ).toContain("/embed/room-span.webp")
+  ).toPass();
+
 export const sessionIsWriteable = async ({
   page,
 }: {

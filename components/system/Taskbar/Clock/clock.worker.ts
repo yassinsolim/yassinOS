@@ -67,16 +67,55 @@ const sendTick = (): void => {
   if (offscreenCanvas) drawClockText(dateTime);
 };
 
+// paused (the embedding page covers us), the clock stops ticking
+type ClockPause = { paused: boolean };
+
+let paused = false;
+let alignTimer: ReturnType<typeof setTimeout> | undefined;
+let tickTimer: ReturnType<typeof setInterval> | undefined;
+
+const stopTicking = (): void => {
+  globalThis.clearTimeout(alignTimer);
+  globalThis.clearInterval(tickTimer);
+  alignTimer = undefined;
+  tickTimer = undefined;
+};
+
+const startTicking = (): void => {
+  stopTicking();
+  sendTick();
+  alignTimer = globalThis.setTimeout(() => {
+    sendTick();
+    tickTimer = globalThis.setInterval(sendTick, MILLISECONDS_IN_SECOND);
+  }, MILLISECONDS_IN_SECOND - new Date().getMilliseconds());
+};
+
+const isClockPause = (data: unknown): data is ClockPause =>
+  typeof (data as Partial<ClockPause> | null)?.paused === "boolean";
+
 let initialized = false;
 
 globalThis.addEventListener(
   "message",
-  ({ data }: { data: ClockSource | OffscreenRenderProps | "init" }) => {
+  ({
+    data,
+  }: {
+    data: ClockPause | ClockSource | OffscreenRenderProps | "init";
+  }) => {
     if (!initialized) {
       if (data === "init") {
         initialized = true;
         globalThis.postMessage("source");
       }
+      return;
+    }
+
+    if (isClockPause(data)) {
+      ({ paused } = data);
+
+      if (paused) stopTicking();
+      else if (mode) startTicking();
+
       return;
     }
 
@@ -115,11 +154,8 @@ globalThis.addEventListener(
 
     if (data === "local" || data === "ntp") mode = data;
 
-    sendTick();
-    globalThis.setTimeout(() => {
-      sendTick();
-      globalThis.setInterval(sendTick, MILLISECONDS_IN_SECOND);
-    }, MILLISECONDS_IN_SECOND - new Date().getMilliseconds());
+    if (paused) sendTick();
+    else startTicking();
   },
   { passive: true }
 );
