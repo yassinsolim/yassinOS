@@ -1,12 +1,13 @@
 import roomTheme from "public/embed/room-theme.json";
 import defaultTheme from "styles/defaultTheme";
 import {
+  ROOM_WALLPAPER,
   SPAN_WALLPAPER,
   isEmbedded,
   isMainDisplay,
   isSpanWallpaper,
 } from "utils/embed";
-import { TASKBAR_HEIGHT } from "utils/constants";
+import { DEFAULT_WALLPAPER, TASKBAR_HEIGHT } from "utils/constants";
 
 describe("room theme", () => {
   const { colors, formats, sizes } = defaultTheme;
@@ -80,3 +81,12 @@ test("the main screen shows its part of the span image", () =>
     size: "163.6333% 210.1281%",
     url: "/embed/room-span.webp",
   }));
+
+test("on its own, the default wallpaper is the whole span image", () => {
+  expect(DEFAULT_WALLPAPER).toBe("ROOM");
+  expect(ROOM_WALLPAPER).toEqual({
+    position: "45% 50%",
+    size: "cover",
+    url: SPAN_WALLPAPER.url,
+  });
+});

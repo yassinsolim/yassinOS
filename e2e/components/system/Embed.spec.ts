@@ -1,6 +1,7 @@
 import { type Server, createServer } from "http";
 import { type AddressInfo } from "net";
 import { type Page, expect, test } from "@playwright/test";
+import { type SessionData } from "contexts/session/types";
 import {
   BACKGROUND_CANVAS_SELECTOR,
   DESKTOP_ENTRIES_SELECTOR,
@@ -238,6 +239,13 @@ test("pause stops the wallpaper and resume starts it again", async ({
     "needs the animated wallpaper, WebGL in a worker"
   );
 
+  // the default wallpaper is a still image, so this frame picks an animated one
+  await page.addInitScript(() => {
+    window.DEBUG_DEFAULT_SESSION = {
+      wallpaperImage: "VANTA",
+      wallpaperVersion: 2,
+    } as SessionData;
+  });
   await loadRoom(page, baseURL, ANIMATED_QUERY);
   await helloUntilReady(page);
   await expect(

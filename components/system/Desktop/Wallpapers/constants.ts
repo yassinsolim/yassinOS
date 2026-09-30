@@ -119,6 +119,11 @@ export const WALLPAPER_MENU: WallpaperMenuItem[] = [
   },
   {
     hasAlt: false,
+    id: "ROOM",
+    name: "Room",
+  },
+  {
+    hasAlt: false,
     id: "STABLE_DIFFUSION",
     name: "Stable Diffusion (beta)",
     requiresWebGPU: true,

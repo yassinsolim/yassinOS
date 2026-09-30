@@ -35,6 +35,14 @@ export const SPAN_WALLPAPER = {
   url: span.path,
 };
 
+// the whole design, for yassinOS on its own (the ROOM wallpaper): it covers
+// the screen, and a portrait one lands on the middle of the ribbon
+export const ROOM_WALLPAPER = {
+  position: "45% 50%",
+  size: "cover",
+  url: span.path,
+};
+
 let spanWallpaperLoad: Promise<void> | undefined;
 
 // resolves once the image is decoded (or failed), so it paints in one go

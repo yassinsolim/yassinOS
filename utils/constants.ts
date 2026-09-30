@@ -22,7 +22,14 @@ export const DEFAULT_CLOCK_SOURCE: ClockSource = "local";
 
 export const DEFAULT_THEME: ThemeName = "defaultTheme";
 
-export const DEFAULT_WALLPAPER = "VANTA";
+// the room's wallpaper (yassin.app's three screens), a still image
+export const DEFAULT_WALLPAPER = "ROOM";
+
+// the default before it, and the session version that knows the difference
+// between that old default and a pick
+export const OLD_DEFAULT_WALLPAPER = "VANTA";
+
+export const WALLPAPER_VERSION = 2;
 
 export const DEFAULT_WALLPAPER_FIT: WallpaperFit = "fill";
 

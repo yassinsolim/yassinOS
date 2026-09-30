@@ -86,13 +86,15 @@ The room on yassin.app shows yassinOS on its main monitor (M1), a 1600 x 900 ifr
 https://os.yassin.app/?embed=1&display=main&protocol=1&wallpaper=span&quality=high
 ```
 
-| Param            | What it does                                                                                                                               |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `embed=1`        | Embedded mode. The other params only count with it.                                                                                        |
-| `display=main`   | The room's main screen. The desktop starts with nothing open, the parent opens apps (`app=` and `url=` still work).                        |
-| `wallpaper=span` | A still image instead of the animated wallpaper: M1's part of the room wallpaper that spans all three screens. No wallpaper worker starts. |
-| `quality=low`    | The animated wallpaper at half resolution and 30 fps (`high` is the default).                                                              |
-| `protocol=1`     | The protocol the parent speaks. Informational: `yassinos:hello` and `yassinos:ready` carry the version that counts.                        |
+| Param            | What it does                                                                                                           |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `embed=1`        | Embedded mode. The other params only count with it.                                                                    |
+| `display=main`   | The room's main screen. The desktop starts with nothing open, the parent opens apps (`app=` and `url=` still work).    |
+| `wallpaper=span` | M1's part of the room wallpaper that spans all three screens, whatever the visitor picked. No wallpaper worker starts. |
+| `quality=low`    | An animated wallpaper, if one was picked, at half resolution and 30 fps (`high` is the default).                       |
+| `protocol=1`     | The protocol the parent speaks. Informational: `yassinos:hello` and `yassinos:ready` carry the version that counts.    |
+
+The room wallpaper is also yassinOS's default on its own (Background, Room): the whole design, covering the screen. A session saved earlier with the old default (Vanta Waves) switches to it once; any wallpaper picked after that stays.
 
 The bridge (`utils/embedBridge.ts`, `hooks/useEmbedBridge.ts`) only runs with `embed=1` in a frame. Messages are plain objects with a `type`.
 

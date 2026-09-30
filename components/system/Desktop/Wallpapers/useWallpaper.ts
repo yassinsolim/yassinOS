@@ -13,6 +13,8 @@ import {
   WALLPAPER_WORKER_NAMES,
   bgPositionSize,
   cancelWallpaperRun,
+  isCurrentWallpaperRun,
+  nextWallpaperRun,
 } from "components/system/Desktop/Wallpapers/constants";
 import {
   type WallpaperMessage,
@@ -22,6 +24,7 @@ import { useFileSystem } from "contexts/fileSystem";
 import { useSession } from "contexts/session";
 import useWorker from "hooks/useWorker";
 import {
+  ROOM_WALLPAPER,
   SPAN_WALLPAPER,
   isSpanWallpaper,
   loadSpanWallpaper,
@@ -526,9 +529,9 @@ const useWallpaper = (
     writeFile,
   ]);
 
-  // the part of the room's span image behind the main screen, painted once
-  // it's decoded
-  const loadSpanWallpaperBackground = useCallback((): void => {
+  // the room's still image, painted once it's decoded: embedded in the room
+  // (wallpaper=span) the part behind the main screen, else the whole design
+  const loadRoomWallpaper = useCallback((): void => {
     if (
       window.DEBUG_DISABLE_WALLPAPER ||
       getSearchParam("disableWallpaper") === "true"
@@ -536,18 +539,28 @@ const useWallpaper = (
       return;
     }
 
+    const { position, size, url } = isSpanWallpaper()
+      ? SPAN_WALLPAPER
+      : ROOM_WALLPAPER;
+
+    resetWallpaper();
+
+    const runId = nextWallpaperRun();
+
     loadSpanWallpaper().then(() => {
+      if (!isCurrentWallpaperRun(runId)) return;
+
       const { style } = document.documentElement;
 
       style.removeProperty("--background-blend-mode");
       style.setProperty(
         "--after-background",
-        `url("${SPAN_WALLPAPER.url}") ${SPAN_WALLPAPER.position} / ${SPAN_WALLPAPER.size} no-repeat ${colors.background}`
+        `url("${url}") ${position} / ${size} no-repeat ${colors.background}`
       );
       style.setProperty("--after-background-opacity", "1");
       style.setProperty("--before-background-opacity", "0");
     });
-  }, [colors.background]);
+  }, [colors.background, resetWallpaper]);
 
   useEffect(() => {
     if (sessionLoaded) {
@@ -556,8 +569,8 @@ const useWallpaper = (
         wallpaperTimerRef.current = 0;
       }
 
-      if (isSpanWallpaper()) {
-        loadSpanWallpaperBackground();
+      if (isSpanWallpaper() || wallpaperName === DEFAULT_WALLPAPER) {
+        loadRoomWallpaper();
       } else if (
         wallpaperName &&
         !WALLPAPER_WORKER_NAMES.includes(wallpaperName)
@@ -569,7 +582,7 @@ const useWallpaper = (
     }
   }, [
     loadFileWallpaper,
-    loadSpanWallpaperBackground,
+    loadRoomWallpaper,
     loadWallpaper,
     sessionLoaded,
     wallpaperName,

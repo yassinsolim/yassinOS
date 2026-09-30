@@ -1,6 +1,7 @@
 import { test } from "@playwright/test";
 import {
   backgroundCanvasMaybeIsVisible,
+  backgroundIsRoom,
   backgroundIsUrl,
   canvasBackgroundIsHidden,
   captureConsoleLogs,
@@ -20,7 +21,11 @@ import {
 
 test.beforeEach(captureConsoleLogs());
 
-test("has background", loadAppWithCanvas);
+test("has background", async ({ page }) => {
+  await loadApp()({ page });
+  await backgroundIsRoom({ page });
+  await canvasBackgroundIsHidden({ page });
+});
 
 test("can change background", async ({ headless, browserName, page }) => {
   await disableWallpaper({ page });
