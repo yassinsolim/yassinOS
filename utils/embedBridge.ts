@@ -167,6 +167,8 @@ export const postToParent = (message: OsMessage): boolean => {
 let earlyHello: MessageEvent<unknown> | undefined;
 
 const keepEarlyHello = (event: MessageEvent<unknown>): void => {
+  if (!isAllowedParentOrigin(event.origin)) return;
+
   if (
     readParentMessage(event, { parent: window.parent })?.type === MESSAGE.HELLO
   ) {

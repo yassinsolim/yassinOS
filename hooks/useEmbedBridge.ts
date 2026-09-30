@@ -95,7 +95,9 @@ const useEmbedBridge = (): void => {
         if (processesRef.current[openPid].minimized) minimize(openPid);
         setForegroundId(openPid);
       } else {
-        openApp(processId, url, { exists, open });
+        openApp(processId, url, { exists, open }).catch(() => {
+          // an app that fails to open just stays closed
+        });
       }
     },
     [exists, minimize, open, processesRef, setForegroundId]

@@ -547,19 +547,23 @@ const useWallpaper = (
 
     const runId = nextWallpaperRun();
 
-    loadSpanWallpaper().then(() => {
-      if (!isCurrentWallpaperRun(runId)) return;
+    loadSpanWallpaper()
+      .then(() => {
+        if (!isCurrentWallpaperRun(runId)) return;
 
-      const { style } = document.documentElement;
+        const { style } = document.documentElement;
 
-      style.removeProperty("--background-blend-mode");
-      style.setProperty(
-        "--after-background",
-        `url("${url}") ${position} / ${size} no-repeat ${colors.background}`
-      );
-      style.setProperty("--after-background-opacity", "1");
-      style.setProperty("--before-background-opacity", "0");
-    });
+        style.removeProperty("--background-blend-mode");
+        style.setProperty(
+          "--after-background",
+          `url("${url}") ${position} / ${size} no-repeat ${colors.background}`
+        );
+        style.setProperty("--after-background-opacity", "1");
+        style.setProperty("--before-background-opacity", "0");
+      })
+      .catch(() => {
+        // the theme's background colour stays
+      });
   }, [colors.background, resetWallpaper]);
 
   useEffect(() => {
