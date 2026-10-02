@@ -10,11 +10,45 @@
 
 .bar {
   display: flex;
-  align-items: baseline;
+  align-items: center;
+  flex-wrap: wrap;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px 16px;
   padding: 14px 18px;
   border-bottom: 1px solid #3a322a;
+}
+
+.launch,
+.tasks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0 18px 10px;
+  list-style: none;
+}
+
+.launch {
+  padding: 0;
+}
+
+.launch button,
+.tasks button,
+.quiet {
+  border: 1px solid #3a322a;
+  border-radius: 999px;
+  background: #221c16;
+  color: inherit;
+  font: inherit;
+  padding: 6px 10px;
+}
+
+.launch button:focus-visible,
+.tasks button:focus-visible,
+.quiet:focus-visible,
+.title:focus-visible {
+  outline: 2px solid #e8ff6a;
+  outline-offset: 2px;
 }
 
 .sessions {
@@ -62,9 +96,17 @@
   outline-offset: 3px;
 }
 
-.title {
-  padding: 10px 14px;
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-right: 8px;
   border-bottom: 1px solid #3a322a;
+}
+
+.title {
+  flex: 1;
+  padding: 10px 14px;
   cursor: grab;
   font-size: 14px;
   font-weight: 650;
@@ -72,14 +114,25 @@
   user-select: none;
 }
 
+.quiet {
+  border: 0;
+  background: transparent;
+  color: #b7aea4;
+}
+
 .body {
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 10px;
-  padding: 14px;
-  font-size: 14px;
-  line-height: 1.45;
+  min-height: 0;
+}
+
+.host {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  border: 0;
+  background: #221c16;
 }
 
 .hint {
@@ -133,7 +186,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .window,
-  .meter > span {
+  .meter > span,
+  .host {
     transition: none;
     animation: none;
   }

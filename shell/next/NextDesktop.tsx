@@ -1,67 +1,57 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { clampBox, nudgeBox, type Box } from "shell/geometry";
+import { APP_REGISTRY, manifestById } from "shell/manifest";
 import {
-  clampBox,
-  MIN_HEIGHT,
-  MIN_WIDTH,
-  nudgeBox,
-  type Box,
-} from "shell/geometry";
-import { FRAME_MONITOR } from "shell/manifest";
-import {
+  closeWindow,
   emptyShell,
+  minimizeWindow,
+  nextProcessId,
   openProcess,
   placeWindow,
   raiseWindow,
+  restoreWindow,
   type ShellSnapshot,
-  type ShellWindow,
 } from "shell/model";
-import FrameMonitor from "shell/next/FrameMonitor";
 import styles from "shell/next/desktop.module.css";
 import { useRoomHandshake } from "shell/next/handshake";
-
-const boot = (): ShellSnapshot => {
-  const opened = openProcess(
-    emptyShell(),
-    { appId: FRAME_MONITOR.appId, title: FRAME_MONITOR.title },
-    FRAME_MONITOR.appId
-  );
-  const entry = opened.windows[0];
-
-  if (!entry) return opened;
-
-  return placeWindow(opened, entry.windowId, {
-    height: FRAME_MONITOR.height,
-    width: FRAME_MONITOR.width,
-    x: entry.x,
-    y: entry.y,
-  });
-};
+import WindowFrame from "shell/next/WindowFrame";
 
 const NextDesktop = (): React.ReactElement => {
-  const [shell, setShell] = useState(boot);
+  const [shell, setShell] = useState<ShellSnapshot>(emptyShell);
   const [paused, setPaused] = useState(false);
-  const [reduceMotion, setReduceMotion] = useState(false);
   const surface = useRef<HTMLDivElement>(null);
-  const windowRef = useRef<HTMLDivElement>(null);
-  const frame = shell.windows[0];
+  const focusedId = shell.windows.find((entry) => entry.focused)?.windowId;
 
-  useRoomHandshake(setPaused);
-
-  useEffect(() => {
-    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const apply = (): void => setReduceMotion(media.matches);
-
-    apply();
-    media.addEventListener("change", apply);
-
-    return () => media.removeEventListener("change", apply);
-  }, []);
+  useRoomHandshake(shell, setPaused);
 
   useEffect(() => {
-    windowRef.current?.focus();
-  }, []);
+    if (!focusedId) return;
 
-  const move = useCallback((windowId: string, box: Box): void => {
+    const title = document.querySelector(`[data-shell-window="${focusedId}"]`);
+
+    if (title instanceof HTMLElement) title.focus();
+  }, [focusedId]);
+
+  const launch = (appId: string): void => {
+    const manifest = manifestById(appId);
+
+    if (!manifest) return;
+
+    setShell((current) =>
+      openProcess(
+        current,
+        {
+          appId: manifest.appId,
+          height: manifest.height,
+          title: manifest.title,
+          width: manifest.width,
+        },
+        nextProcessId(current, manifest.appId)
+      )
+    );
+  };
+
+  const place = useCallback((windowId: string, box: Box): void => {
     setShell((current) => {
       const bounds = surface.current?.getBoundingClientRect();
       const display = bounds
@@ -74,49 +64,18 @@ const NextDesktop = (): React.ReactElement => {
     });
   }, []);
 
-  const beginDrag = (
-    event: React.PointerEvent<HTMLElement>,
-    mode: "move" | "resize",
-    entry: ShellWindow
-  ): void => {
-    if (event.button !== 0) return;
+  const nudge = (windowId: string, key: string, shift: boolean): void => {
+    const entry = shell.windows.find((item) => item.windowId === windowId);
 
-    event.preventDefault();
-    event.currentTarget.setPointerCapture(event.pointerId);
-    windowRef.current?.focus();
-    setShell((current) => raiseWindow(current, entry.windowId));
+    if (!entry) return;
 
-    const originX = event.clientX;
-    const originY = event.clientY;
-    const start = {
-      height: entry.height,
-      width: entry.width,
-      x: entry.x,
-      y: entry.y,
-    };
-    const handle = event.currentTarget;
-    const onMove = (moveEvent: PointerEvent): void => {
-      const dx = moveEvent.clientX - originX;
-      const dy = moveEvent.clientY - originY;
+    const bounds = surface.current?.getBoundingClientRect();
+    const nudged = nudgeBox(entry, key, shift);
+    const next = bounds
+      ? clampBox(nudged, { height: bounds.height, width: bounds.width })
+      : nudged;
 
-      move(
-        entry.windowId,
-        mode === "move"
-          ? { ...start, x: start.x + dx, y: start.y + dy }
-          : {
-              ...start,
-              height: Math.max(MIN_HEIGHT, start.height + dy),
-              width: Math.max(MIN_WIDTH, start.width + dx),
-            }
-      );
-    };
-    const onUp = (): void => {
-      handle.removeEventListener("pointermove", onMove);
-      handle.removeEventListener("pointerup", onUp);
-    };
-
-    handle.addEventListener("pointermove", onMove);
-    handle.addEventListener("pointerup", onUp);
+    setShell((current) => placeWindow(current, windowId, next));
   };
 
   return (
@@ -127,67 +86,71 @@ const NextDesktop = (): React.ReactElement => {
           <li className={styles.unavailable}>Stream, unavailable</li>
           <li className={styles.unavailable}>Lab, unavailable</li>
         </ul>
-        <p className={styles.note}>One window on the local session.</p>
+        <ul className={styles.launch}>
+          {APP_REGISTRY.map((app) => (
+            <li key={app.appId}>
+              <button onClick={() => launch(app.appId)} type="button">
+                <span aria-hidden="true">{app.icon}</span> {app.title}
+              </button>
+            </li>
+          ))}
+        </ul>
+        <p className={styles.note}>
+          Arrow keys move the focused window. Shift and an arrow key resizes it.
+        </p>
       </div>
-      <div ref={surface} className={styles.surface}>
-        {frame && (
-          <div
-            aria-labelledby="frame-title"
-            className={styles.window}
-            role="dialog"
-            style={{
-              height: frame.height,
-              left: frame.x,
-              top: frame.y,
-              width: frame.width,
-              zIndex: frame.z,
-            }}
-          >
-            <div
-              ref={windowRef}
-              aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight"
-              className={styles.title}
-              id="frame-title"
-              onKeyDown={(event) => {
-                if (event.key === " " || event.key === "Enter") {
-                  event.preventDefault();
+      {shell.windows.length > 0 && (
+        <ul className={styles.tasks}>
+          {shell.windows.map((entry) => (
+            <li key={entry.windowId}>
+              <button
+                aria-pressed={!entry.minimized}
+                onClick={() =>
+                  setShell((current) =>
+                    entry.minimized
+                      ? restoreWindow(current, entry.windowId)
+                      : raiseWindow(current, entry.windowId)
+                  )
                 }
-                if (!event.key.startsWith("Arrow")) return;
+                type="button"
+              >
+                {entry.title}
+                {entry.minimized ? ", hidden" : ""}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <div ref={surface} className={styles.surface}>
+        {shell.windows.flatMap((entry) => {
+          if (entry.minimized) return [];
 
-                event.preventDefault();
-                const bounds = surface.current?.getBoundingClientRect();
-                const nudged = nudgeBox(frame, event.key, event.shiftKey);
-                const next = bounds
-                  ? clampBox(nudged, {
-                      height: bounds.height,
-                      width: bounds.width,
-                    })
-                  : nudged;
+          const process = shell.processes.find(
+            (item) => item.processId === entry.processId
+          );
 
-                setShell((current) =>
-                  placeWindow(current, frame.windowId, next)
-                );
-              }}
-              onPointerDown={(event) => beginDrag(event, "move", frame)}
-              role="button"
-              tabIndex={0}
-            >
-              {frame.title}
-            </div>
-            <div className={styles.body}>
-              <FrameMonitor paused={paused} reduceMotion={reduceMotion} />
-              <p className={styles.hint}>
-                Arrow keys move the window. Shift and an arrow key resizes it.
-              </p>
-            </div>
-            <button
-              aria-label="Resize frame time"
-              className={styles.resize}
-              onPointerDown={(event) => beginDrag(event, "resize", frame)}
-              type="button"
-            />
-          </div>
-        )}
+          if (!process) return [];
+
+          return [
+            <WindowFrame
+              key={entry.windowId}
+              appId={process.appId}
+              entry={entry}
+              onClose={(windowId) =>
+                setShell((current) => closeWindow(current, windowId))
+              }
+              onHide={(windowId) =>
+                setShell((current) => minimizeWindow(current, windowId))
+              }
+              onNudge={nudge}
+              onPlace={place}
+              onRaise={(windowId) =>
+                setShell((current) => raiseWindow(current, windowId))
+              }
+              paused={paused}
+            />,
+          ];
+        })}
       </div>
     </main>
   );

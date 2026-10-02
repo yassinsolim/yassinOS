@@ -8,12 +8,16 @@ import {
   ROOM_PROTOCOL,
 } from "shell/protocol";
 import {
+  closeWindow,
   emptyShell,
   focusWindow,
   isSessionKind,
+  minimizeWindow,
+  nextProcessId,
   openProcess,
   placeWindow,
   raiseWindow,
+  restoreWindow,
 } from "shell/model";
 
 const ROOT = process.cwd();
@@ -101,6 +105,48 @@ describe("shell model", () => {
       y: 40,
       z: 3,
     });
+    expect(second.windows.every((entry) => !entry.minimized)).toBe(true);
+  });
+
+  test("hides, restores, and closes without losing the other window", () => {
+    const first = openProcess(
+      emptyShell(),
+      { appId: "frame-monitor", title: "Frame time" },
+      nextProcessId(emptyShell(), "frame-monitor")
+    );
+    const second = openProcess(
+      first,
+      { appId: "wasm-bench", title: "Wasm pace" },
+      nextProcessId(first, "wasm-bench")
+    );
+
+    const hidden = minimizeWindow(second, "window:wasm-bench-1");
+
+    expect(hidden.windows.map((entry) => entry.minimized)).toEqual([
+      false,
+      true,
+    ]);
+    expect(hidden.windows.map((entry) => entry.focused)).toEqual([true, false]);
+
+    const restored = restoreWindow(hidden, "window:wasm-bench-1");
+    const front = restored.windows.find(
+      (entry) => entry.windowId === "window:wasm-bench-1"
+    );
+
+    expect(front).toMatchObject({ focused: true, minimized: false, z: 3 });
+    expect(
+      restored.windows.find(
+        (entry) => entry.windowId === "window:frame-monitor-1"
+      )?.focused
+    ).toBe(false);
+
+    const closed = closeWindow(restored, "window:wasm-bench-1");
+
+    expect(closed.processes.map((process) => process.processId)).toEqual([
+      "frame-monitor-1",
+    ]);
+    expect(closed.windows.map((entry) => entry.focused)).toEqual([true]);
+    expect(closeWindow(closed, "missing")).toBe(closed);
   });
 });
 

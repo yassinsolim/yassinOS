@@ -1,24 +1,32 @@
-import { useEffect } from "react";
-import { FRAME_MONITOR } from "shell/manifest";
+import { useEffect, useRef, type Dispatch, type SetStateAction } from "react";
+import { type ShellSnapshot } from "shell/model";
 import {
   isAllowedParentOrigin,
   parseRoomParent,
   ROOM_MESSAGE,
   ROOM_PROTOCOL,
 } from "shell/protocol";
+import { applyRoomControl, roomState } from "shell/roomState";
 
 export const useRoomHandshake = (
-  setPaused: (paused: boolean) => void
+  shell: ShellSnapshot,
+  setPaused: Dispatch<SetStateAction<boolean>>
 ): void => {
+  const shellRef = useRef(shell);
+  const pinnedRef = useRef("");
+
+  shellRef.current = shell;
+
   useEffect(() => {
     const embedded = new URLSearchParams(window.location.search).get("embed");
     const active = window.parent !== window && embedded === "1";
-    let pinned = "";
     const onMessage = (event: MessageEvent<unknown>): void => {
       if (event.source !== window.parent) return;
 
       if (
-        pinned ? event.origin !== pinned : !isAllowedParentOrigin(event.origin)
+        pinnedRef.current
+          ? event.origin !== pinnedRef.current
+          : !isAllowedParentOrigin(event.origin)
       ) {
         return;
       }
@@ -28,28 +36,26 @@ export const useRoomHandshake = (
       if (!message) return;
 
       if (message.type === ROOM_MESSAGE.HELLO) {
-        pinned = event.origin;
+        pinnedRef.current = event.origin;
         window.parent.postMessage(
           { protocol: ROOM_PROTOCOL, type: ROOM_MESSAGE.READY },
           event.origin
         );
-        window.parent.postMessage(
-          {
-            apps: [FRAME_MONITOR.appId],
-            focused: FRAME_MONITOR.appId,
-            type: ROOM_MESSAGE.STATE,
-          },
-          event.origin
-        );
-      } else if (message.type === ROOM_MESSAGE.PAUSE) {
-        setPaused(true);
-      } else if (message.type === ROOM_MESSAGE.RESUME) {
-        setPaused(false);
+        window.parent.postMessage(roomState(shellRef.current), event.origin);
+        return;
       }
+
+      setPaused((current) => applyRoomControl(current, message));
     };
 
     if (active) window.addEventListener("message", onMessage);
 
     return () => window.removeEventListener("message", onMessage);
   }, [setPaused]);
+
+  useEffect(() => {
+    if (!pinnedRef.current || window.parent === window) return;
+
+    window.parent.postMessage(roomState(shell), pinnedRef.current);
+  }, [shell]);
 };

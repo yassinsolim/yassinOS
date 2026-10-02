@@ -17,19 +17,47 @@ daedalOS provides the window manager, the taskbar, BrowserFS, and the process di
 
 `acceptRoomHello` is stricter and only accepts protocol 1. The running embed parser does not use that strict check, so a newer hello still gets through.
 
-The opt-in compositor, when framed with `embed=1`, uses the same parser. It answers hello with `ready` and a state for `frame-monitor`, and it honors pause and resume. It ignores `open`. It does not import `utils/embedBridge.ts`.
+The opt-in compositor, when framed with `embed=1`, uses the same parser. It answers hello with `ready` and a state for the apps that are actually open. It honors pause and resume by telling each guest to stop. It ignores `open`. It does not import `utils/embedBridge.ts`.
 
 ## What `?shell=next` draws
 
-One dark surface and one window. The window comes from the `frame-monitor` manifest: a frame-time readout from `requestAnimationFrame` and `performance.now()`, plus `hardwareConcurrency`, `deviceMemory` when the browser exposes it, and a WebGPU adapter name when `navigator.gpu` works. Missing APIs stay missing. Arrow keys move the window. Shift and an arrow key resizes it. Drag the title. Drag the corner. The window is one keyboard stop.
+A dark surface, a launcher, and a task row. Each app comes from a manifest in `shell/manifest.ts`: a stable id, a short title, a letter mark, an entry type (`dom` or `worker`), the capabilities it may ask for, and the window's starting size. Manifests are checked when the registry loads and again in tests.
 
-Local is the session this page actually runs. Stream and Lab are labels and do nothing. There is no Moonlight client here.
+Two apps ship:
+
+- Frame time, a `dom` guest. After the parent grants `frame-time`, it samples `requestAnimationFrame` inside the frame and reads cores, device memory, and whether WebGPU is present. Missing APIs stay missing.
+- Wasm pace, a `worker` guest. The parent keeps a small original Wasm module (`step`, one multiply-add). The guest may run it only after the parent grants `wasm-bench` and sends those bytes. The worker is created inside the guest, then the guest reports steps, milliseconds, and the checksum.
+
+Launch, hide, restore, and close are on the shell. Arrow keys move the focused window. Shift and an arrow key resizes it. Drag the title. Drag the corner. Local is the session this page runs. Stream and Lab are labels and do nothing. There is no Moonlight client here.
 
 The chrome is original. It does not import `components/system` or `contexts/process`.
 
+## Sandbox
+
+Each window hosts one iframe. The sandbox token is `allow-scripts` only. `allow-same-origin` is not set, so the guest origin is opaque (`null`) and is not the parent origin. The guest document is `srcdoc` written by the shell. It is not a remote page.
+
+The guest talks to the shell with protocol 1 messages (`shell:ready`, `shell:request`, `shell:grant`, `shell:result`, `shell:deny`, `shell:pause`, `shell:resume`). The shell accepts a message only when all of these hold:
+
+- `event.source` is that iframe's `contentWindow`
+- `event.origin` is `null`
+- `protocol` is exactly 1 and the payload matches the schema
+- a request names a capability on that app's manifest
+
+Anything else is dropped. A request for a capability the manifest does not list is answered with `shell:deny` and no Wasm bytes.
+
+Parent to guest uses `postMessage` on that content window with target origin `*`, because an opaque origin has no stable name. The call is not a broadcast. Guest to parent uses the parent's real origin.
+
+What this stops: the guest reading the parent DOM, parent cookies, or parent storage, and navigating the top window. The Wasm module is not in the guest document. A denied request does not receive it.
+
+What this does not stop:
+
+- The guest can still use browser APIs the browser gives an opaque origin, including a timer loop. `frame-time` is cooperative for that reason. The Wasm bytes are the part the parent can actually withhold.
+- Pause is a message. A guest that ignores `shell:pause` keeps running until the window is closed and the iframe is destroyed.
+- This is same-process isolation, not a virtual machine. It does not stop a guest from using CPU.
+- The guest document is shell-authored. The boundary is for that guest code, not a loader for third-party URLs.
+
 ## Later, not this change
 
-1. More than one app, behind a sandbox, still off the default boot.
-2. An origin-private file area and a layout snapshot for the new shell only.
-3. A real session picker. Stream only when a Moonlight client is actually integrated. Lab only as a launcher for a machine he is already allowed to use.
-4. Leave the fork network only after a cold load no longer imports `components/system` or `contexts/process`, and any leftover daedalOS tree is a credited vendor folder with Dustin Brett's notice still on it.
+1. An origin-private file area and a layout snapshot for the new shell only.
+2. A real session picker. Stream only when a Moonlight client is actually integrated. Lab only as a launcher for a machine he is already allowed to use.
+3. Leave the fork network only after a cold load no longer imports `components/system` or `contexts/process`, and any leftover daedalOS tree is a credited vendor folder with Dustin Brett's notice still on it.

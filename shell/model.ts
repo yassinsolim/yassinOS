@@ -11,6 +11,7 @@ export type ShellProcess = {
 export type ShellWindow = {
   focused: boolean;
   height: number;
+  minimized: boolean;
   processId: string;
   title: string;
   width: number;
@@ -49,9 +50,22 @@ export const emptyShell = (): ShellSnapshot => ({
   windows: [],
 });
 
+export const nextProcessId = (state: ShellSnapshot, appId: string): string => {
+  const taken = new Set(state.processes.map((process) => process.processId));
+  let index = 1;
+  let processId = `${appId}-${index}`;
+
+  while (taken.has(processId)) {
+    index += 1;
+    processId = `${appId}-${index}`;
+  }
+
+  return processId;
+};
+
 export const openProcess = (
   state: ShellSnapshot,
-  app: { appId: string; title: string },
+  app: { appId: string; height?: number; title: string; width?: number },
   processId: string
 ): ShellSnapshot => {
   const process: ShellProcess = {
@@ -61,10 +75,11 @@ export const openProcess = (
   };
   const nextWindow: ShellWindow = {
     focused: true,
-    height: 480,
+    height: app.height ?? 480,
+    minimized: false,
     processId,
     title: app.title,
-    width: 720,
+    width: app.width ?? 720,
     windowId: `window:${processId}`,
     x: 48 + state.windows.length * 24,
     y: 48 + state.windows.length * 24,
@@ -126,3 +141,67 @@ export const raiseWindow = (
     ),
   };
 };
+
+const focusVisible = (windows: readonly ShellWindow[]): ShellWindow[] => {
+  let topId = "";
+  let topZ = -1;
+
+  windows.forEach((entry) => {
+    if (!entry.minimized && entry.z > topZ) {
+      topZ = entry.z;
+      topId = entry.windowId;
+    }
+  });
+
+  return windows.map((entry) => ({
+    ...entry,
+    focused: topId !== "" && entry.windowId === topId,
+  }));
+};
+
+export const closeWindow = (
+  state: ShellSnapshot,
+  windowId: string
+): ShellSnapshot => {
+  const target = state.windows.find((entry) => entry.windowId === windowId);
+
+  if (!target) return state;
+
+  return {
+    ...state,
+    processes: state.processes.filter(
+      (process) => process.processId !== target.processId
+    ),
+    windows: focusVisible(
+      state.windows.filter((entry) => entry.windowId !== windowId)
+    ),
+  };
+};
+
+export const minimizeWindow = (
+  state: ShellSnapshot,
+  windowId: string
+): ShellSnapshot => ({
+  ...state,
+  windows: focusVisible(
+    state.windows.map((entry) =>
+      entry.windowId === windowId
+        ? { ...entry, focused: false, minimized: true }
+        : entry
+    )
+  ),
+});
+
+export const restoreWindow = (
+  state: ShellSnapshot,
+  windowId: string
+): ShellSnapshot =>
+  raiseWindow(
+    {
+      ...state,
+      windows: state.windows.map((entry) =>
+        entry.windowId === windowId ? { ...entry, minimized: false } : entry
+      ),
+    },
+    windowId
+  );
