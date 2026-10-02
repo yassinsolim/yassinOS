@@ -1,13 +1,17 @@
 export const ROOM_PROTOCOL = 1;
 
 export const ROOM_MESSAGE = {
+  BRIDGE: "yassinos:bridge",
   ESCAPE: "yassinos:escape",
+  HANDOFF: "yassinos:handoff",
   HELLO: "yassinos:hello",
   INPUT: "yassinos:input",
   OPEN: "yassinos:open",
   PAUSE: "yassinos:pause",
   READY: "yassinos:ready",
   RESUME: "yassinos:resume",
+  SESSION: "yassinos:session",
+  SESSIONS: "yassinos:sessions",
   STATE: "yassinos:state",
 } as const;
 
@@ -120,4 +124,83 @@ export const parseRoomParent = (
   }
 
   return undefined;
+};
+
+const SECRET_KEY = /^(?:credential|passwd|password|pin|secret|token)$/i;
+const SESSION_DETAIL = /^[\w .,'-]{0,160}$/;
+
+const hasSecretKey = (record: Record<string, unknown>): boolean =>
+  Object.keys(record).some((key) => SECRET_KEY.test(key));
+
+const remoteKind = (value: unknown): "lab" | "stream" | undefined => {
+  if (value === "lab" || value === "stream") return value;
+
+  return undefined;
+};
+
+export type BridgeOffer = {
+  providers: ("lab" | "stream")[];
+};
+
+export type SessionReport = {
+  detail: string;
+  provider: "lab" | "stream";
+  status: "error" | "resumed";
+};
+
+export const acceptBridgeOffer = (data: unknown): BridgeOffer | undefined => {
+  if (!isRecord(data) || data.type !== ROOM_MESSAGE.BRIDGE) return undefined;
+  if (data.protocol !== ROOM_PROTOCOL || hasSecretKey(data)) return undefined;
+  if (!Array.isArray(data.providers)) return undefined;
+
+  const providers: ("lab" | "stream")[] = [];
+
+  for (const item of data.providers) {
+    const kind = remoteKind(item);
+
+    if (!kind || providers.includes(kind)) return undefined;
+
+    providers.push(kind);
+  }
+
+  if (providers.length === 0) return undefined;
+
+  return { providers };
+};
+
+export const acceptSessionReport = (
+  data: unknown
+): SessionReport | undefined => {
+  if (!isRecord(data) || data.type !== ROOM_MESSAGE.SESSION) return undefined;
+  if (data.protocol !== ROOM_PROTOCOL || hasSecretKey(data)) return undefined;
+
+  const provider = remoteKind(data.provider);
+
+  if (!provider) return undefined;
+  if (data.status !== "error" && data.status !== "resumed") return undefined;
+  if (data.detail !== undefined && typeof data.detail !== "string") {
+    return undefined;
+  }
+  if (typeof data.detail === "string" && !SESSION_DETAIL.test(data.detail)) {
+    return undefined;
+  }
+
+  return {
+    detail: typeof data.detail === "string" ? data.detail : "",
+    provider,
+    status: data.status,
+  };
+};
+
+export const acceptHandoffCommand = (
+  data: unknown
+): { provider: "lab" | "stream" } | undefined => {
+  if (!isRecord(data) || data.type !== ROOM_MESSAGE.HANDOFF) return undefined;
+  if (data.protocol !== ROOM_PROTOCOL || hasSecretKey(data)) return undefined;
+
+  const provider = remoteKind(data.provider);
+
+  if (!provider) return undefined;
+
+  return { provider };
 };

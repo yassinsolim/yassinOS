@@ -46,18 +46,73 @@
 .launch button:focus-visible,
 .tasks button:focus-visible,
 .quiet:focus-visible,
-.title:focus-visible {
+.title:focus-visible,
+.choice button:focus-visible,
+.field input:focus-visible {
   outline: 2px solid #e8ff6a;
   outline-offset: 2px;
 }
 
 .sessions {
+  align-items: center;
   display: flex;
-  gap: 14px;
-  margin: 0;
   font-size: 13px;
+  gap: 14px;
   letter-spacing: 0.04em;
+  margin: 0;
   text-transform: uppercase;
+}
+
+.picker {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin: 0 auto;
+  max-width: 720px;
+  padding: 48px 20px;
+}
+
+.choices {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.choice {
+  border: 1px solid #3a322a;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+}
+
+.choice h2 {
+  font-size: 16px;
+  margin: 0;
+}
+
+.picker h1 {
+  font-size: 22px;
+  margin: 0;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field input {
+  background: #14110e;
+  border: 1px solid #3a322a;
+  border-radius: 8px;
+  color: inherit;
+  font: inherit;
+  padding: 6px 8px;
 }
 
 .current {
@@ -187,7 +242,9 @@
 @media (prefers-reduced-motion: reduce) {
   .window,
   .meter > span,
-  .host {
+  .host,
+  .picker,
+  .choice {
     transition: none;
     animation: none;
   }

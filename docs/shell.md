@@ -19,6 +19,14 @@ daedalOS provides the window manager, the taskbar, BrowserFS, and the process di
 
 The opt-in compositor, when framed with `embed=1`, uses the same parser. It answers hello with `ready` and a state for the apps that are actually open. It honors pause and resume by telling each guest to stop. It ignores `open`. It does not import `utils/embedBridge.ts`.
 
+These messages are ignored by the classic parser, so an older parent keeps working:
+
+- `yassinos:bridge` with protocol 1 and `providers` of `stream`, `lab`, or both. The framing page is offering a handoff it can perform. The shell posts `yassinos:sessions` back with each provider's enabled flag and reason.
+- `yassinos:session` with protocol 1, a provider, and status `resumed` or `error`.
+- `yassinos:handoff` is the shell asking the parent to take over, after the user confirms. A handoff command that arrives from the parent is refused. The shell never launches one on its own.
+
+A bridge or handoff is accepted only from `window.parent`, and only from an allowed origin (`https://yassin.app`, `https://www.yassin.app`, or a dev localhost origin). After the first accepted message, that origin is pinned. No message from another origin can enable Stream or Lab.
+
 ## What `?shell=next` draws
 
 A dark surface, a launcher, and a task row. Each app comes from a manifest in `shell/manifest.ts`: a stable id, a short title, a letter mark, an entry type (`dom` or `worker`), the capabilities it may ask for, and the window's starting size. Manifests are checked when the registry loads and again in tests.
@@ -29,7 +37,9 @@ Three apps ship:
 - Wasm pace, a `worker` guest. The parent keeps a small original Wasm module (`step`, one multiply-add). The guest may run it only after the parent grants `wasm-bench` and sends those bytes. The worker is created inside the guest, then the guest reports steps, milliseconds, and the checksum.
 - Files, a `dom` guest. It lists, reads, writes, and deletes text files in its own namespace. It can also read one shared note. It cannot see another app's files.
 
-Launch, hide, restore, and close are on the shell. Arrow keys move the focused window. Shift and an arrow key resizes it. Drag the title. Drag the corner. Local is the session this page runs. Stream and Lab are labels and do nothing. There is no Moonlight client here.
+`/next` opens a session picker before the compositor. Local is the direct route (`?session=local`, or the Open Local button) and boots the apps, files, and layout snapshot. A Sessions button on that desktop returns to the picker. Classic daedalOS is not involved.
+
+Stream and Lab start disabled. This page does not speak GameStream or SSH, and it does not store a Sunshine or SSH password.
 
 The chrome is original. It does not import `components/system` or `contexts/process`.
 
@@ -56,7 +66,37 @@ The shell store is named `yassinos-shell`, version 1. It uses the origin-private
 
 Each file name is one segment: letters, numbers, dot, underscore, or hyphen. `..`, slashes, and backslashes are rejected. Keys look like `v1/apps/<appId>/<name>`. The shared note is `v1/shared/readme.txt` and is read-only. A file is at most 64 KB. An app is at most 32 files and 256 KB. A file message larger than 80 KB is dropped. While the room has paused the shell, file operations return `paused`.
 
-The layout snapshot is `v1/layout.json`, version 1. It stores app ids, process ids, bounds, hidden state, z-order, and focus. It does not store iframe objects. On boot the shell clamps bounds to the current display, skips unknown apps and invalid numbers, and ignores any snapshot whose version is not 1. Reset layout clears that snapshot. Reset storage deletes the shell prefix, including files and the snapshot, after a confirmation. Neither reset touches BrowserFS.
+The layout snapshot is `v1/layout.json`, version 1. It stores app ids, process ids, bounds, hidden state, z-order, and focus. It does not store iframe objects. On boot the shell clamps bounds to the current display, skips unknown apps and invalid numbers, and ignores any snapshot whose version is not 1. Reset layout clears that snapshot. Reset storage deletes the shell prefix, including files and the snapshot, after a confirmation. Neither reset touches BrowserFS. Reset storage also clears `v1/session.json`.
+
+## Sessions
+
+The picker is the first screen on `/next`. Preferences live at `v1/session.json` in the same shell store. The file keeps a version, the last provider id, an optional lab address, and an optional handoff id. It never keeps a password, a token, or a host list.
+
+```json
+{
+  "version": 1,
+  "providerId": "local",
+  "labEndpoint": "https://lab.example/ssh"
+}
+```
+
+Lab stays disabled until that address is HTTPS, has no username or password, and has no secret query parameter. The built-in `webssh` handler then opens that exact URL in a new tab after a button press and a confirmation. There is no default host. `ssh://` and `http://` are rejected. The page does not implement SSH.
+
+Stream stays disabled with "No Moonlight bridge is connected." A saved handoff id does nothing unless this build registered that handler. None is registered, so typing one does not invent a Moonlight client. A framing page can enable Stream by sending:
+
+```json
+{ "type": "yassinos:bridge", "protocol": 1, "providers": ["stream"] }
+```
+
+After the user confirms, the shell posts only:
+
+```json
+{ "type": "yassinos:handoff", "protocol": 1, "provider": "stream" }
+```
+
+That message has no host and no credential. The parent, not this page, would talk to Moonlight or Sunshine. If the bridge later reports an error, the picker shows it and Retry asks for confirmation again.
+
+A version other than 1 in `session.json` is ignored. Storage failing still shows the picker, and Local still opens.
 
 What this does not stop:
 
@@ -67,5 +107,5 @@ What this does not stop:
 
 ## Later, not this change
 
-1. A real session picker. Stream only when a Moonlight client is actually integrated. Lab only as a launcher for a machine he is already allowed to use.
+1. A real Moonlight or native-bridge client. Stream can hand off only after that client exists and is registered. Lab can open an HTTPS page the user configured, and would need a real machine launcher beyond that.
 2. Leave the fork network only after a cold load no longer imports `components/system` or `contexts/process`, and any leftover daedalOS tree is a credited vendor folder with Dustin Brett's notice still on it.

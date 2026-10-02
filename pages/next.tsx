@@ -1,5 +1,5 @@
-import NextDesktop from "shell/next/NextDesktop";
+import NextShell from "shell/next/NextShell";
 
-const NextPage = (): React.ReactElement => <NextDesktop />;
+const NextPage = (): React.ReactElement => <NextShell />;
 
 export default NextPage;

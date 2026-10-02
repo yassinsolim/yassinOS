@@ -127,7 +127,7 @@ The room kit lives in `public/embed/` and is served with `Access-Control-Allow-O
 ## Credits
 
 - **Based on** [daedalOS](https://github.com/DustinBrett/daedalOS) by **Dustin Brett**: https://github.com/DustinBrett
-- `LICENSE` keeps Copyright (c) 2025 Dustin Brett for that work, and Copyright (c) 2025 Yassin Soliman for the modifications. A cold load still boots daedalOS. `?shell=next` opens a separate sandboxed compositor with its own files. See `docs/shell.md`.
+- `LICENSE` keeps Copyright (c) 2025 Dustin Brett for that work, and Copyright (c) 2025 Yassin Soliman for the modifications. A cold load still boots daedalOS. `?shell=next` opens a session picker, and only Local runs the sandboxed compositor. See `docs/shell.md`.
 
 ---
 

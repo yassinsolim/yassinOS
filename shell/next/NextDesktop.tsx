@@ -17,7 +17,11 @@ import { useRoomHandshake } from "shell/next/handshake";
 import { useShellStorage } from "shell/next/useShellStorage";
 import WindowFrame from "shell/next/WindowFrame";
 
-const NextDesktop = (): React.ReactElement => {
+const NextDesktop = ({
+  onSessions,
+}: {
+  onSessions: () => void;
+}): React.ReactElement => {
   const [shell, setShell] = useState<ShellSnapshot>(emptyShell);
   const [paused, setPaused] = useState(false);
   const [confirm, setConfirm] = useState<"layout" | "none" | "storage">("none");
@@ -88,11 +92,12 @@ const NextDesktop = (): React.ReactElement => {
   return (
     <main className={styles.root}>
       <div className={styles.bar}>
-        <ul className={styles.sessions}>
-          <li className={styles.current}>Local</li>
-          <li className={styles.unavailable}>Stream, unavailable</li>
-          <li className={styles.unavailable}>Lab, unavailable</li>
-        </ul>
+        <div className={styles.sessions}>
+          <span className={styles.current}>Local</span>
+          <button className={styles.quiet} onClick={onSessions} type="button">
+            Sessions
+          </button>
+        </div>
         <ul className={styles.launch}>
           {APP_REGISTRY.map((app) => (
             <li key={app.appId}>
