@@ -9,23 +9,30 @@ import { ProcessProvider } from "contexts/process";
 import { SessionProvider } from "contexts/session";
 import { ViewportProvider } from "contexts/viewport";
 
-const App = ({ Component: Index, pageProps }: AppProps): React.ReactElement => (
-  <ViewportProvider>
-    <ProcessProvider>
-      <FileSystemProvider>
-        <SessionProvider>
-          <ErrorBoundary>
-            <Metadata />
-            <StyledApp>
-              <MenuProvider>
-                <Index {...pageProps} />
-              </MenuProvider>
-            </StyledApp>
-          </ErrorBoundary>
-        </SessionProvider>
-      </FileSystemProvider>
-    </ProcessProvider>
-  </ViewportProvider>
-);
+const App = ({
+  Component: Index,
+  pageProps,
+  router,
+}: AppProps): React.ReactElement =>
+  router.pathname === "/next" ? (
+    <Index {...pageProps} />
+  ) : (
+    <ViewportProvider>
+      <ProcessProvider>
+        <FileSystemProvider>
+          <SessionProvider>
+            <ErrorBoundary>
+              <Metadata />
+              <StyledApp>
+                <MenuProvider>
+                  <Index {...pageProps} />
+                </MenuProvider>
+              </StyledApp>
+            </ErrorBoundary>
+          </SessionProvider>
+        </FileSystemProvider>
+      </ProcessProvider>
+    </ViewportProvider>
+  );
 
 export default memo(App);

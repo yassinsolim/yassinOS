@@ -1,44 +1,25 @@
 import { type Processes } from "contexts/process/types";
+import {
+  isAllowedParentOrigin,
+  parseRoomParent,
+  ROOM_MESSAGE,
+  ROOM_PROTOCOL,
+} from "shell/protocol";
 import { isEmbedded } from "utils/embed";
 import { PROCESS_DELIMITER } from "utils/constants";
 
 // the messages between yassinOS and the page framing it (yassin.app's room).
-// all of them are plain objects with a `type`, see README.md > Embedding
+// validation lives in shell/protocol. this module still owns the classic desktop.
 
-export const EMBED_PROTOCOL = 1;
+export const EMBED_PROTOCOL = ROOM_PROTOCOL;
 
-export const MESSAGE = {
-  ESCAPE: "yassinos:escape",
-  HELLO: "yassinos:hello",
-  INPUT: "yassinos:input",
-  OPEN: "yassinos:open",
-  PAUSE: "yassinos:pause",
-  READY: "yassinos:ready",
-  RESUME: "yassinos:resume",
-  STATE: "yassinos:state",
-} as const;
-
-type EmbedTier = "high" | "low";
+export const MESSAGE = ROOM_MESSAGE;
 
 type InputKind = "keydown" | "pointerdown" | "pointerup";
 
 type EmbedState = { apps: string[]; focused: string | null };
 
-type HelloMessage = {
-  display?: "main";
-  protocol: number;
-  size?: [number, number];
-  tier?: EmbedTier;
-  type: typeof MESSAGE.HELLO;
-};
-
-type OpenMessage = { app: string; type: typeof MESSAGE.OPEN; url?: string };
-
-type ParentMessage =
-  | HelloMessage
-  | OpenMessage
-  | { type: typeof MESSAGE.PAUSE }
-  | { type: typeof MESSAGE.RESUME };
+type ParentMessage = ReturnType<typeof parseRoomParent>;
 
 type OsMessage =
   | (EmbedState & { type: typeof MESSAGE.STATE })
@@ -46,73 +27,7 @@ type OsMessage =
   | { protocol: typeof EMBED_PROTOCOL; type: typeof MESSAGE.READY }
   | { type: typeof MESSAGE.ESCAPE };
 
-const ROOM_ORIGINS = new Set(["https://yassin.app", "https://www.yassin.app"]);
-const DEVELOPMENT_ORIGIN =
-  /^http:\/\/(?:localhost|127\.0\.0\.1|192\.168\.\d{1,3}\.\d{1,3})(?::\d{1,5})?$/;
-const IS_DEVELOPMENT = process.env.NODE_ENV === "development";
-const MAX_APP_LENGTH = 64;
-const MAX_URL_LENGTH = 2048;
-
-export const isAllowedParentOrigin = (
-  origin: string,
-  development = IS_DEVELOPMENT
-): boolean =>
-  ROOM_ORIGINS.has(origin) || (development && DEVELOPMENT_ORIGIN.test(origin));
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === "object" && value !== null && !Array.isArray(value);
-
-const isSize = (value: unknown): value is [number, number] =>
-  Array.isArray(value) &&
-  value.length === 2 &&
-  value.every(
-    (side) => typeof side === "number" && Number.isFinite(side) && side > 0
-  );
-
-export const parseParentMessage = (
-  data: unknown
-): ParentMessage | undefined => {
-  if (!isRecord(data)) return undefined;
-
-  const { type } = data;
-
-  if (type === MESSAGE.PAUSE || type === MESSAGE.RESUME) return { type };
-
-  if (type === MESSAGE.HELLO) {
-    const { display, protocol, size, tier } = data;
-
-    if (
-      typeof protocol !== "number" ||
-      !Number.isInteger(protocol) ||
-      protocol < 1 ||
-      (display !== undefined && display !== "main") ||
-      (size !== undefined && !isSize(size)) ||
-      (tier !== undefined && tier !== "high" && tier !== "low")
-    ) {
-      return undefined;
-    }
-
-    return { display, protocol, size, tier, type };
-  }
-
-  if (type === MESSAGE.OPEN) {
-    const { app, url } = data;
-
-    if (
-      typeof app !== "string" ||
-      !app ||
-      app.length > MAX_APP_LENGTH ||
-      (url !== undefined &&
-        (typeof url !== "string" || url.length > MAX_URL_LENGTH))
-    ) {
-      return undefined;
-    }
-
-    return { app, type, url };
-  }
-
-  return undefined;
-};
+export const parseParentMessage = parseRoomParent;
 
 type ReadContext = {
   development?: boolean;
@@ -311,3 +226,5 @@ export const createInputReporter = (
     reset: () => held.clear(),
   };
 };
+
+export { isAllowedParentOrigin } from "shell/protocol";

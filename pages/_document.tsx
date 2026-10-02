@@ -7,6 +7,7 @@ import NextDocument, {
   NextScript,
 } from "next/document";
 import { ServerStyleSheet } from "styled-components";
+import { nextShellBootScript } from "shell/route";
 import { DEFAULT_LOCALE } from "utils/constants";
 
 const withStyledComponents = async (
@@ -44,6 +45,10 @@ class Document extends NextDocument {
       <Html lang={DEFAULT_LOCALE}>
         <Head />
         <body>
+          <script
+            // eslint-disable-next-line react/no-danger
+            dangerouslySetInnerHTML={{ __html: nextShellBootScript }}
+          />
           <Main />
           <NextScript />
         </body>

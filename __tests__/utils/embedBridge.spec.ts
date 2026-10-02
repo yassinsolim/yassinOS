@@ -100,6 +100,7 @@ describe("parent message types", () => {
   test.each([
     HELLO,
     { protocol: 1, type: MESSAGE.HELLO },
+    { ...HELLO, protocol: 2 },
     { ...HELLO, tier: "low" },
     { type: MESSAGE.PAUSE },
     { type: MESSAGE.RESUME },

@@ -92,3 +92,37 @@ export const focusWindow = (
     focused: entry.windowId === windowId,
   })),
 });
+
+export type WindowBox = {
+  height: number;
+  width: number;
+  x: number;
+  y: number;
+};
+
+export const placeWindow = (
+  state: ShellSnapshot,
+  windowId: string,
+  box: WindowBox
+): ShellSnapshot => ({
+  ...state,
+  windows: state.windows.map((entry) =>
+    entry.windowId === windowId ? { ...entry, ...box } : entry
+  ),
+});
+
+export const raiseWindow = (
+  state: ShellSnapshot,
+  windowId: string
+): ShellSnapshot => {
+  const top = Math.max(0, ...state.windows.map((entry) => entry.z));
+
+  return {
+    ...state,
+    windows: state.windows.map((entry) =>
+      entry.windowId === windowId
+        ? { ...entry, focused: true, z: top + 1 }
+        : { ...entry, focused: false }
+    ),
+  };
+};

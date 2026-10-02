@@ -1,11 +1,19 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
-import { acceptRoomHello, ROOM_HELLO, ROOM_PROTOCOL } from "shell/protocol";
+import {
+  acceptRoomHello,
+  parseRoomParent,
+  ROOM_HELLO,
+  ROOM_MESSAGE,
+  ROOM_PROTOCOL,
+} from "shell/protocol";
 import {
   emptyShell,
   focusWindow,
   isSessionKind,
   openProcess,
+  placeWindow,
+  raiseWindow,
 } from "shell/model";
 
 const ROOT = process.cwd();
@@ -68,6 +76,31 @@ describe("shell model", () => {
       true,
       false,
     ]);
+    expect(focused.windows.map((entry) => entry.z)).toEqual([1, 2]);
+
+    const raised = raiseWindow(second, "window:p1");
+
+    expect(raised.windows.map((entry) => entry.focused)).toEqual([true, false]);
+    expect(raised.windows.map((entry) => entry.z)).toEqual([3, 2]);
+
+    const moved = placeWindow(raised, "window:p1", {
+      height: 200,
+      width: 320,
+      x: 80,
+      y: 40,
+    });
+    const placed = moved.windows.find(
+      (entry) => entry.windowId === "window:p1"
+    );
+
+    expect(placed).toMatchObject({
+      focused: true,
+      height: 200,
+      width: 320,
+      x: 80,
+      y: 40,
+      z: 3,
+    });
   });
 });
 
@@ -97,16 +130,65 @@ describe("room protocol boundary", () => {
       acceptRoomHello({ display: "other", protocol: 1, type: ROOM_HELLO })
     ).toBeUndefined();
     expect(acceptRoomHello({ type: "yassinos:pause" })).toBeUndefined();
+
+    const newer = { protocol: 2, type: ROOM_HELLO };
+
+    expect(parseRoomParent(newer)).toEqual(newer);
+    expect(acceptRoomHello(newer)).toBeUndefined();
+    expect(parseRoomParent({ type: ROOM_MESSAGE.PAUSE })).toEqual({
+      type: ROOM_MESSAGE.PAUSE,
+    });
+    expect(
+      parseRoomParent({ app: "Browser", type: ROOM_MESSAGE.OPEN })
+    ).toEqual({
+      app: "Browser",
+      type: ROOM_MESSAGE.OPEN,
+    });
   });
 });
 
+const repoPath = (filePath: string): string =>
+  path.relative(ROOT, filePath).split(path.sep).join("/");
+
 describe("classic desktop", () => {
-  test("does not import the new shell", () => {
+  test("does not import the new compositor", () => {
     const importsShell = /from ["']shell\//;
+    const importsCompositor = /from ["']shell\/next\//;
+    const protocolOnly = new Set(["utils/embedBridge.ts"]);
     const offenders = WIRED_ROOTS.flatMap((directory) =>
       filesUnder(directory)
-    ).filter((filePath) => importsShell.test(readFileSync(filePath, "utf8")));
+    ).filter((filePath) => {
+      const source = readFileSync(filePath, "utf8");
+      const relative = repoPath(filePath);
+
+      if (relative === "pages/next.tsx") return false;
+      if (relative === "pages/_document.tsx") {
+        return (
+          importsCompositor.test(source) ||
+          /from ["']shell\/(?!route["'])/.test(source)
+        );
+      }
+      if (importsCompositor.test(source)) return true;
+      if (!importsShell.test(source)) return false;
+
+      return !protocolOnly.has(relative);
+    });
 
     expect(offenders).toEqual([]);
+    expect(
+      readFileSync(path.join(ROOT, "pages/index.tsx"), "utf8")
+    ).not.toMatch(/shell\//);
+    expect(
+      readFileSync(path.join(ROOT, "utils/embedBridge.ts"), "utf8")
+    ).toMatch(/from ["']shell\/protocol["']/);
+  });
+
+  test("the next shell does not import the classic desktop", () => {
+    const forbidden = /from ["'](?:components\/system|contexts\/process)/;
+    const files = [...filesUnder("shell"), path.join(ROOT, "pages/next.tsx")];
+
+    expect(
+      files.filter((filePath) => forbidden.test(readFileSync(filePath, "utf8")))
+    ).toEqual([]);
   });
 });
