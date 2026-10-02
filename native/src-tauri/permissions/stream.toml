@@ -1,0 +1,13 @@
+[[permission]]
+identifier = "stream-handoff"
+description = "Status, preview, confirmed save, and confirmed launch for the local Moonlight app."
+commands.allow = [
+  "bridge_status",
+  "cancel_launch",
+  "lab_status",
+  "launch_status",
+  "launch_stream",
+  "load_target",
+  "preview_launch",
+  "save_target",
+]

@@ -234,6 +234,22 @@
       "rules": {
         "playwright/no-standalone-expect": "off"
       }
+    },
+    {
+      "files": ["native/ui/**/*.js"],
+      "env": {
+        "browser": true
+      },
+      "parserOptions": {
+        "project": null,
+        "sourceType": "module"
+      },
+      "extends": ["plugin:@typescript-eslint/disable-type-checked"],
+      "rules": {
+        "@typescript-eslint/explicit-function-return-type": "off",
+        "@typescript-eslint/explicit-module-boundary-types": "off",
+        "deprecation/deprecation": "off"
+      }
     }
   ],
   "reportUnusedDisableDirectives": true,

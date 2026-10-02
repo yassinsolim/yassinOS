@@ -1,4 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
+import {
+  checkStreamApp,
+  checkStreamHost,
+  checkStreamLabel,
+  readNativeBridge,
+  tauriInvoke,
+  type NativeBridgeView,
+} from "shell/nativeBridge";
 import NextDesktop from "shell/next/NextDesktop";
 import SessionPicker from "shell/next/SessionPicker";
 import { useParentSession } from "shell/next/useParentSession";
@@ -7,6 +15,7 @@ import {
   confirmLaunch,
   decideLaunch,
   describeProviders,
+  HANDOFF_FAILED,
   type HandoffMessage,
   performHandoff,
   reduceShellRoute,
@@ -27,6 +36,14 @@ const NextShell = (): React.ReactElement => {
   const [attempt, setAttempt] = useState<SessionAttempt>({ name: "idle" });
   const [labDraft, setLabDraft] = useState("");
   const [streamDraft, setStreamDraft] = useState("");
+  const [nativeView, setNativeView] = useState<NativeBridgeView>();
+  const [nativeDraft, setNativeDraft] = useState({
+    app: "",
+    host: "",
+    hostLabel: "",
+  });
+  const [nativePreview, setNativePreview] = useState("");
+  const [promptSave, setPromptSave] = useState(false);
   const { bridge, pinnedOrigin, report } = useParentSession();
   const liveViews = useMemo(
     () =>
@@ -34,9 +51,21 @@ const NextShell = (): React.ReactElement => {
         bridge,
         handlers: SHELL_HANDLERS,
         labEndpoint: prefs.labEndpoint,
+        nativeStream: nativeView?.available
+          ? {
+              configured: nativeView.configured,
+              installed: nativeView.installed,
+            }
+          : undefined,
         streamHandler: prefs.streamHandler,
       }),
-    [bridge, prefs]
+    [
+      bridge,
+      nativeView?.available,
+      nativeView?.configured,
+      nativeView?.installed,
+      prefs,
+    ]
   );
 
   useEffect(() => {
@@ -44,6 +73,27 @@ const NextShell = (): React.ReactElement => {
 
     window.parent.postMessage(sessionCatalogMessage(liveViews), pinnedOrigin);
   }, [liveViews, pinnedOrigin]);
+
+  useEffect(() => {
+    const invoke = tauriInvoke(window);
+
+    if (!invoke) return;
+
+    readNativeBridge(invoke)
+      .then((view) => {
+        if (!view.available) return;
+
+        setNativeView(view);
+        setNativeDraft({
+          app: view.app,
+          host: view.host,
+          hostLabel: view.hostLabel,
+        });
+      })
+      .catch(() => {
+        // a failed probe leaves Stream on the website path
+      });
+  }, []);
 
   useEffect(() => {
     if (sessionFromSearch(window.location.search) === "local") {
@@ -120,6 +170,25 @@ const NextShell = (): React.ReactElement => {
       bridge,
       handlers: SHELL_HANDLERS,
       labEndpoint: prefs.labEndpoint,
+      launchNative: () => {
+        const invoke = tauriInvoke(window);
+
+        if (!invoke) throw new Error("missing bridge");
+
+        invoke("launch_stream", { args: { confirmed: true } }).catch(() => {
+          setAttempt({
+            message: HANDOFF_FAILED,
+            name: "error",
+            providerId: "stream",
+          });
+        });
+      },
+      nativeStream: nativeView?.available
+        ? {
+            configured: nativeView.configured,
+            installed: nativeView.installed,
+          }
+        : undefined,
       notify,
       openLab: openLabTab,
       openStream: () => {
@@ -166,6 +235,98 @@ const NextShell = (): React.ReactElement => {
     <SessionPicker
       attempt={attempt}
       labDraft={labDraft}
+      native={
+        nativeView?.available
+          ? {
+              app: nativeDraft.app,
+              host: nativeDraft.host,
+              hostLabel: nativeDraft.hostLabel,
+              onApp: (value) =>
+                setNativeDraft((current) => ({ ...current, app: value })),
+              onCancelSave: () => setPromptSave(false),
+              onConfirmSave: () => {
+                const invoke = tauriInvoke(window);
+                const host = checkStreamHost(nativeDraft.host);
+                const appName = checkStreamApp(nativeDraft.app);
+                const hostLabel = checkStreamLabel(nativeDraft.hostLabel);
+                const problem =
+                  ("error" in host && host.error) ||
+                  ("error" in appName && appName.error) ||
+                  ("error" in hostLabel && hostLabel.error) ||
+                  "";
+
+                if (
+                  !invoke ||
+                  !("value" in host) ||
+                  !("value" in appName) ||
+                  !("value" in hostLabel)
+                ) {
+                  setNativePreview(
+                    problem || "The desktop bridge is not available."
+                  );
+                  setPromptSave(false);
+                  return;
+                }
+
+                invoke("save_target", {
+                  args: {
+                    appName: appName.value,
+                    confirmed: true,
+                    host: host.value,
+                    hostLabel: hostLabel.value,
+                  },
+                })
+                  .then(() => readNativeBridge(invoke))
+                  .then((view) => {
+                    setNativeView(view);
+                    setPromptSave(false);
+                    setNativePreview(
+                      "Saved the host and app. No password was stored."
+                    );
+                  })
+                  .catch(() => {
+                    setNativePreview("Could not save the target.");
+                    setPromptSave(false);
+                  });
+              },
+              onHost: (value) =>
+                setNativeDraft((current) => ({ ...current, host: value })),
+              onHostLabel: (value) =>
+                setNativeDraft((current) => ({ ...current, hostLabel: value })),
+              onPreview: () => {
+                const invoke = tauriInvoke(window);
+
+                if (!invoke) return;
+
+                invoke("preview_launch", {
+                  args: { appName: nativeDraft.app, host: nativeDraft.host },
+                })
+                  .then((preview) => {
+                    if (
+                      typeof preview === "object" &&
+                      preview &&
+                      "program" in preview &&
+                      "args" in preview &&
+                      Array.isArray(preview.args)
+                    ) {
+                      setNativePreview(
+                        `${String(preview.program)}\n${preview.args.join(" ")}`
+                      );
+                      return;
+                    }
+
+                    setNativePreview("Could not preview the launch.");
+                  })
+                  .catch(() => {
+                    setNativePreview("Could not preview the launch.");
+                  });
+              },
+              onSave: () => setPromptSave(true),
+              preview: nativePreview,
+              promptSave,
+            }
+          : undefined
+      }
       onCancel={() => setAttempt({ name: "idle" })}
       onConfirm={() => {
         if (attempt.name === "confirm") runHandoff(attempt.providerId);

@@ -20,6 +20,12 @@ export const MAX_ENDPOINT_LENGTH = 2048;
 export const WEBSSH_HANDLER = "webssh";
 
 export const STREAM_DISABLED = "No Moonlight bridge is connected.";
+export const NATIVE_STREAM_MISSING =
+  "Moonlight is not installed on this computer.";
+export const NATIVE_STREAM_NEEDS_TARGET =
+  "Set a host and an app. This page does not speak GameStream.";
+export const NATIVE_STREAM_READY =
+  "Hands off to the Moonlight app on this computer. This page does not speak GameStream.";
 export const STREAM_UNREGISTERED = "That handoff handler is not registered.";
 export const STREAM_READY =
   "A handoff is available. This page does not speak GameStream.";
@@ -69,6 +75,11 @@ export type SessionPreferences = {
 export type SessionHandler = {
   id: string;
   kind: RemoteKind;
+};
+
+export type NativeStreamProbe = {
+  configured: boolean;
+  installed: boolean;
 };
 
 export type SessionAttempt =
@@ -167,8 +178,9 @@ export const encodePreferences = (
     : undefined;
 
   if (endpoint && "href" in endpoint) body.labEndpoint = endpoint.href;
-  if (isHandlerId(prefs.streamHandler))
-    {body.streamHandler = prefs.streamHandler;}
+  if (isHandlerId(prefs.streamHandler)) {
+    body.streamHandler = prefs.streamHandler;
+  }
 
   const bytes = new TextEncoder().encode(JSON.stringify(body));
 
@@ -238,6 +250,7 @@ export const describeProviders = (world: {
   bridge?: BridgeOffer;
   handlers: readonly SessionHandler[];
   labEndpoint: string;
+  nativeStream?: NativeStreamProbe;
   streamHandler: string;
 }): ProviderView[] => {
   const streamBridge = world.bridge?.providers.includes("stream") ?? false;
@@ -254,7 +267,31 @@ export const describeProviders = (world: {
 
   let stream: ProviderView;
 
-  if (world.streamHandler && !namedStream && !streamBridge) {
+  if (world.nativeStream && !world.nativeStream.installed) {
+    stream = view(
+      false,
+      "stream",
+      STREAM_PRIVACY,
+      NATIVE_STREAM_MISSING,
+      "Stream"
+    );
+  } else if (world.nativeStream && !world.nativeStream.configured) {
+    stream = view(
+      false,
+      "stream",
+      STREAM_PRIVACY,
+      NATIVE_STREAM_NEEDS_TARGET,
+      "Stream"
+    );
+  } else if (world.nativeStream?.configured) {
+    stream = view(
+      true,
+      "stream",
+      STREAM_PRIVACY,
+      NATIVE_STREAM_READY,
+      "Stream"
+    );
+  } else if (world.streamHandler && !namedStream && !streamBridge) {
     stream = view(
       false,
       "stream",
@@ -346,6 +383,8 @@ export const performHandoff = (input: {
   bridge?: BridgeOffer;
   handlers: readonly SessionHandler[];
   labEndpoint: string;
+  launchNative?: () => void;
+  nativeStream?: NativeStreamProbe;
   notify: (message: HandoffMessage) => void;
   openLab: (href: string) => boolean;
   openStream: (handlerId: string) => void;
@@ -357,6 +396,22 @@ export const performHandoff = (input: {
 
   if (!entry?.enabled) {
     return { ok: false, reason: entry?.reason ?? "Unavailable." };
+  }
+
+  if (
+    input.providerId === "stream" &&
+    input.nativeStream?.installed &&
+    input.nativeStream.configured
+  ) {
+    if (!input.launchNative) return { ok: false, reason: HANDOFF_FAILED };
+
+    try {
+      input.launchNative();
+    } catch {
+      return { ok: false, reason: HANDOFF_FAILED };
+    }
+
+    return { ok: true };
   }
 
   if (input.providerId === "stream") {

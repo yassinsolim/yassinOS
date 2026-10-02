@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>yassinOS Stream</title>
+    <link rel="stylesheet" href="bridge.css" />
+  </head>
+  <body>
+    <main>
+      <h1>Stream</h1>
+      <p id="status">Checking this computer for Moonlight.</p>
+      <p id="privacy">
+        This window hands off to the Moonlight app. It does not speak GameStream
+        and it does not store a Sunshine password. Lab has no native launcher.
+      </p>
+      <label
+        >Label <input id="label" autocomplete="off" spellcheck="false"
+      /></label>
+      <label
+        >Host <input id="host" autocomplete="off" spellcheck="false"
+      /></label>
+      <label
+        >App <input id="app" autocomplete="off" spellcheck="false"
+      /></label>
+      <p>
+        <button id="preview" type="button">Preview launch</button>
+        <button id="save" type="button">Save target</button>
+        <button id="launch" type="button">Launch Moonlight</button>
+        <button id="cancel" type="button">Cancel launch</button>
+      </p>
+      <p id="confirm" hidden>
+        Confirm this handoff. Nothing here sends a password.
+        <button id="confirm-yes" type="button">Confirm</button>
+        <button id="confirm-no" type="button">Back</button>
+      </p>
+      <pre id="detail"></pre>
+    </main>
+    <script src="bridge.js" type="module"></script>
+  </body>
+</html>

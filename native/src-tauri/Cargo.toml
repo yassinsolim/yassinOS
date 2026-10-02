@@ -1,0 +1,15 @@
+[package]
+name = "yassin-os-bridge"
+version = "0.1.0"
+edition = "2021"
+description = "Optional desktop wrapper that hands Stream off to Moonlight"
+license = "MIT"
+
+[build-dependencies]
+tauri-build = { version = "2.7.1", features = [] }
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tauri = { version = "2.7.1", features = ["custom-protocol"] }
+yassin-os-moonlight = { path = "../moonlight-bridge" }

@@ -11,6 +11,7 @@ const SessionPicker = ({
   onCancel,
   onConfirm,
   onLabDraft,
+  native,
   onOpen,
   onRetry,
   onSaveLab,
@@ -21,6 +22,20 @@ const SessionPicker = ({
 }: {
   attempt: SessionAttempt;
   labDraft: string;
+  native?: {
+    app: string;
+    host: string;
+    hostLabel: string;
+    onApp: (value: string) => void;
+    onCancelSave: () => void;
+    onConfirmSave: () => void;
+    onHost: (value: string) => void;
+    onHostLabel: (value: string) => void;
+    onPreview: () => void;
+    onSave: () => void;
+    preview: string;
+    promptSave: boolean;
+  };
   onCancel: () => void;
   onConfirm: () => void;
   onLabDraft: (value: string) => void;
@@ -46,7 +61,44 @@ const SessionPicker = ({
           <p className={styles.note} id={`${entry.id}-reason`}>
             {entry.reason}
           </p>
-          {entry.id === "stream" && (
+          {entry.id === "stream" && native && (
+            <>
+              <label className={styles.field}>
+                Label
+                <input
+                  onChange={(event) => native.onHostLabel(event.target.value)}
+                  spellCheck={false}
+                  value={native.hostLabel}
+                />
+              </label>
+              <label className={styles.field}>
+                Host
+                <input
+                  onChange={(event) => native.onHost(event.target.value)}
+                  spellCheck={false}
+                  value={native.host}
+                />
+              </label>
+              <label className={styles.field}>
+                App
+                <input
+                  onChange={(event) => native.onApp(event.target.value)}
+                  spellCheck={false}
+                  value={native.app}
+                />
+              </label>
+              {native.preview && (
+                <p className={styles.note}>{native.preview}</p>
+              )}
+              {native.promptSave && (
+                <p className={styles.note}>
+                  Save this host and app on this computer? No password is
+                  stored.
+                </p>
+              )}
+            </>
+          )}
+          {entry.id === "stream" && !native && (
             <label className={styles.field}>
               Handoff id
               <input
@@ -68,7 +120,40 @@ const SessionPicker = ({
             </label>
           )}
           <p>
-            {entry.id === "stream" && (
+            {entry.id === "stream" && native && (
+              <>
+                <button
+                  className={styles.quiet}
+                  onClick={native.onPreview}
+                  type="button"
+                >
+                  Preview launch
+                </button>
+                {native.promptSave ? (
+                  <>
+                    <button onClick={native.onConfirmSave} type="button">
+                      Confirm save
+                    </button>
+                    <button
+                      className={styles.quiet}
+                      onClick={native.onCancelSave}
+                      type="button"
+                    >
+                      Cancel
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    className={styles.quiet}
+                    onClick={native.onSave}
+                    type="button"
+                  >
+                    Save target
+                  </button>
+                )}
+              </>
+            )}
+            {entry.id === "stream" && !native && (
               <button
                 className={styles.quiet}
                 onClick={onSaveStream}

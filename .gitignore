@@ -1,4 +1,6 @@
 .next
+native/**/target
+native/src-tauri/gen
 .swc
 certificates
 out

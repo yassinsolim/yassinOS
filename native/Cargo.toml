@@ -1,0 +1,3 @@
+[workspace]
+members = ["moonlight-bridge", "src-tauri"]
+resolver = "2"

@@ -82,7 +82,7 @@ The picker is the first screen on `/next`. Preferences live at `v1/session.json`
 
 Lab stays disabled until that address is HTTPS, has no username or password, and has no secret query parameter. The built-in `webssh` handler then opens that exact URL in a new tab after a button press and a confirmation. There is no default host. `ssh://` and `http://` are rejected. The page does not implement SSH.
 
-Stream stays disabled with "No Moonlight bridge is connected." A saved handoff id does nothing unless this build registered that handler. None is registered, so typing one does not invent a Moonlight client. A framing page can enable Stream by sending:
+On the website, Stream stays disabled with "No Moonlight bridge is connected." The page does not speak GameStream. A saved handoff id does nothing unless this build registered that handler. None is registered. A framing page can still enable Stream by sending:
 
 ```json
 { "type": "yassinos:bridge", "protocol": 1, "providers": ["stream"] }
@@ -105,7 +105,22 @@ What this does not stop:
 - This is same-process isolation, not a virtual machine. It does not stop a guest from using CPU.
 - The guest document is shell-authored. The boundary is for that guest code, not a loader for third-party URLs.
 
+## Desktop bridge
+
+`native/` is an optional Tauri 2 wrapper. It is not part of the website build and it does not listen on localhost. The window loads only the bundled files `index.html`, `bridge.js`, and `bridge.css`. Navigation to any other URL is cancelled. The content security policy blocks remote pages, frames, and objects. The capability allowlist is `stream-handoff` only. There is no shell plugin and no wildcard process permission.
+
+The wrapper looks for the official Moonlight app on a fixed path list (`/Applications/Moonlight.app` on macOS, the usual Linux and Windows install paths). It does not search `PATH`. It starts that binary with `stream`, the host, and the app name, and with no shell. Flags, control characters, and `pair` are rejected. Preview shows the command and does not launch. Save and launch each require `confirmed: true`. The saved file is `stream-target.json` with version, host label, host, and app. A password field is rejected. Cancel kills the child process. Nothing launches on page load.
+
+Inside that window, `/next` is not the page that loads. If the same shell is later hosted in the wrapper, Stream becomes enabled only after `bridge_status` reports Moonlight installed and a target has been saved. On https://os.yassin.app the Tauri invoke function is absent, so Stream stays disabled.
+
+Lab's native launcher is a stub that always reports unavailable. It stores nothing and starts nothing.
+
+```sh
+cargo test -p yassin-os-moonlight --manifest-path native/Cargo.toml
+cargo build -p yassin-os-bridge --manifest-path native/Cargo.toml
+```
+
 ## Later, not this change
 
-1. A real Moonlight or native-bridge client. Stream can hand off only after that client exists and is registered. Lab can open an HTTPS page the user configured, and would need a real machine launcher beyond that.
+1. Pair a host in Moonlight itself, then use this wrapper's preview and launch against that host. This repo still does not implement the Moonlight protocol.
 2. Leave the fork network only after a cold load no longer imports `components/system` or `contexts/process`, and any leftover daedalOS tree is a credited vendor folder with Dustin Brett's notice still on it.

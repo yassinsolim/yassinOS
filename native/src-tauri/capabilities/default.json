@@ -1,0 +1,6 @@
+{
+  "identifier": "default",
+  "description": "The local bridge window may only use the stream handoff commands.",
+  "windows": ["main"],
+  "permissions": ["stream-handoff"]
+}
