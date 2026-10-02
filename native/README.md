@@ -10,7 +10,11 @@ Moonlight is discovered from fixed install paths. The command is the Moonlight b
 
 ```sh
 cargo test -p yassin-os-moonlight --manifest-path native/Cargo.toml
-cargo build -p yassin-os-bridge --manifest-path native/Cargo.toml
+cargo test -p yassin-os-bridge --manifest-path native/Cargo.toml
+cd native/src-tauri
+APPLE_SIGNING_IDENTITY=- npx --yes @tauri-apps/cli@2.7.1 build --bundles app --config '{"bundle":{"active":true,"macOS":{"signingIdentity":"-"}}}'
 ```
+
+That writes an unsigned local app at `native/target/release/bundle/macos/yassinOS Bridge.app`. Open that app. It does not ask for an Apple ID. The website build does not include it.
 
 Lab does not launch. Pairing stays in the Moonlight app.
