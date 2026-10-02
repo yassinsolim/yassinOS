@@ -23,10 +23,11 @@ The opt-in compositor, when framed with `embed=1`, uses the same parser. It answ
 
 A dark surface, a launcher, and a task row. Each app comes from a manifest in `shell/manifest.ts`: a stable id, a short title, a letter mark, an entry type (`dom` or `worker`), the capabilities it may ask for, and the window's starting size. Manifests are checked when the registry loads and again in tests.
 
-Two apps ship:
+Three apps ship:
 
 - Frame time, a `dom` guest. After the parent grants `frame-time`, it samples `requestAnimationFrame` inside the frame and reads cores, device memory, and whether WebGPU is present. Missing APIs stay missing.
 - Wasm pace, a `worker` guest. The parent keeps a small original Wasm module (`step`, one multiply-add). The guest may run it only after the parent grants `wasm-bench` and sends those bytes. The worker is created inside the guest, then the guest reports steps, milliseconds, and the checksum.
+- Files, a `dom` guest. It lists, reads, writes, and deletes text files in its own namespace. It can also read one shared note. It cannot see another app's files.
 
 Launch, hide, restore, and close are on the shell. Arrow keys move the focused window. Shift and an arrow key resizes it. Drag the title. Drag the corner. Local is the session this page runs. Stream and Lab are labels and do nothing. There is no Moonlight client here.
 
@@ -47,7 +48,15 @@ Anything else is dropped. A request for a capability the manifest does not list 
 
 Parent to guest uses `postMessage` on that content window with target origin `*`, because an opaque origin has no stable name. The call is not a broadcast. Guest to parent uses the parent's real origin.
 
-What this stops: the guest reading the parent DOM, parent cookies, or parent storage, and navigating the top window. The Wasm module is not in the guest document. A denied request does not receive it.
+What this stops: the guest reading the parent DOM, parent cookies, or parent storage, and navigating the top window. The Wasm module is not in the guest document. A denied request does not receive it. File bytes stay in the parent. The guest receives text, not a `FileSystemHandle`.
+
+## Files and layout
+
+The shell store is named `yassinos-shell`, version 1. It uses the origin-private file system when `navigator.storage.getDirectory` exists, IndexedDB otherwise, and an in-memory map if both fail. It does not open, read, or write daedalOS BrowserFS data. There is no cloud sync. A storage failure still boots the desktop.
+
+Each file name is one segment: letters, numbers, dot, underscore, or hyphen. `..`, slashes, and backslashes are rejected. Keys look like `v1/apps/<appId>/<name>`. The shared note is `v1/shared/readme.txt` and is read-only. A file is at most 64 KB. An app is at most 32 files and 256 KB. A file message larger than 80 KB is dropped. While the room has paused the shell, file operations return `paused`.
+
+The layout snapshot is `v1/layout.json`, version 1. It stores app ids, process ids, bounds, hidden state, z-order, and focus. It does not store iframe objects. On boot the shell clamps bounds to the current display, skips unknown apps and invalid numbers, and ignores any snapshot whose version is not 1. Reset layout clears that snapshot. Reset storage deletes the shell prefix, including files and the snapshot, after a confirmation. Neither reset touches BrowserFS.
 
 What this does not stop:
 
@@ -58,6 +67,5 @@ What this does not stop:
 
 ## Later, not this change
 
-1. An origin-private file area and a layout snapshot for the new shell only.
-2. A real session picker. Stream only when a Moonlight client is actually integrated. Lab only as a launcher for a machine he is already allowed to use.
-3. Leave the fork network only after a cold load no longer imports `components/system` or `contexts/process`, and any leftover daedalOS tree is a credited vendor folder with Dustin Brett's notice still on it.
+1. A real session picker. Stream only when a Moonlight client is actually integrated. Lab only as a launcher for a machine he is already allowed to use.
+2. Leave the fork network only after a cold load no longer imports `components/system` or `contexts/process`, and any leftover daedalOS tree is a credited vendor folder with Dustin Brett's notice still on it.

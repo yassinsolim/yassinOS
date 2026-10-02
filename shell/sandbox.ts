@@ -1,3 +1,4 @@
+import { MAX_MESSAGE_BYTES } from "shell/storage";
 import { WASM_STEP } from "shell/wasmStep";
 
 export const SANDBOX_PROTOCOL = 1;
@@ -29,7 +30,7 @@ export type HostBinding = {
 
 export type GuestDecision =
   | { appId: string; kind: "ready" }
-  | { capability: string; id: string; kind: "allow" }
+  | { body?: unknown; capability: string; id: string; kind: "allow" }
   | { capability: string; id: string; kind: "deny" }
   | { kind: "drop"; reason: "app" | "origin" | "schema" | "source" };
 
@@ -41,10 +42,13 @@ export type ParentReply =
       type: typeof SANDBOX_MESSAGE.GRANT;
     }
   | {
+      error?: string;
+      files?: string[];
       id: string;
       module?: number[];
-      ok: true;
+      ok: boolean;
       protocol: typeof SANDBOX_PROTOCOL;
+      text?: string;
       type: typeof SANDBOX_MESSAGE.RESULT;
     }
   | {
@@ -74,6 +78,7 @@ export const sandboxTokensAllowParentOrigin = (tokens: string): boolean => {
 type GuestMessage =
   | { appId: string; type: typeof SANDBOX_MESSAGE.READY }
   | {
+      body?: unknown;
       capability: string;
       id: string;
       type: typeof SANDBOX_MESSAGE.REQUEST;
@@ -100,11 +105,30 @@ const parseGuestMessage = (data: unknown): GuestMessage | undefined => {
       return undefined;
     }
 
-    return {
+    if (data.body !== undefined) {
+      let encoded = "";
+
+      try {
+        encoded = JSON.stringify(data.body);
+      } catch {
+        return undefined;
+      }
+
+      if (encoded.length > MAX_MESSAGE_BYTES) return undefined;
+    }
+
+    const message: Extract<
+      GuestMessage,
+      { type: typeof SANDBOX_MESSAGE.REQUEST }
+    > = {
       capability: data.capability,
       id: data.id,
       type: SANDBOX_MESSAGE.REQUEST,
     };
+
+    if (data.body !== undefined) message.body = data.body;
+
+    return message;
   }
 
   return undefined;
@@ -141,7 +165,15 @@ export const authorizeGuest = (
     };
   }
 
-  return { capability: message.capability, id: message.id, kind: "allow" };
+  const allowed: Extract<GuestDecision, { kind: "allow" }> = {
+    capability: message.capability,
+    id: message.id,
+    kind: "allow",
+  };
+
+  if (message.body !== undefined) allowed.body = message.body;
+
+  return allowed;
 };
 
 export const replyToGuest = (

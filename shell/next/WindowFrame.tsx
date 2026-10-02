@@ -3,6 +3,7 @@ import { MIN_HEIGHT, MIN_WIDTH, type Box } from "shell/geometry";
 import AppHost from "shell/next/AppHost";
 import styles from "shell/next/desktop.module.css";
 import { type ShellWindow } from "shell/model";
+import { type StorageDriver } from "shell/storage";
 
 const WindowFrame = ({
   appId,
@@ -13,6 +14,7 @@ const WindowFrame = ({
   onPlace,
   onRaise,
   paused,
+  store,
 }: {
   appId: string;
   entry: ShellWindow;
@@ -22,6 +24,7 @@ const WindowFrame = ({
   onPlace: (windowId: string, box: Box) => void;
   onRaise: (windowId: string) => void;
   paused: boolean;
+  store: StorageDriver | undefined;
 }): React.ReactElement => {
   const titleRef = useRef<HTMLDivElement>(null);
 
@@ -120,7 +123,7 @@ const WindowFrame = ({
         </button>
       </div>
       <div className={styles.body}>
-        <AppHost appId={appId} paused={paused} />
+        <AppHost appId={appId} paused={paused} store={store} />
       </div>
       <button
         aria-label={`Resize ${entry.title}`}

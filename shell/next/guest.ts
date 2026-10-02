@@ -112,7 +112,85 @@ const HOST_SOURCE = [
   "send({ appId: config.appId, type: 'shell:ready' });",
 ].join("\n");
 
+const FILES_SOURCE = [
+  "const config = JSON.parse(document.getElementById('config').textContent);",
+  "const out = document.getElementById('out');",
+  "const list = document.getElementById('list');",
+  "const nameInput = document.getElementById('name');",
+  "const textInput = document.getElementById('text');",
+  "let paused = false;",
+  "let pending = '';",
+  "const send = (message) => parent.postMessage(Object.assign({ protocol: 1 }, message), parent.origin);",
+  "const ask = (capability, body) => {",
+  "  if (paused) return;",
+  "  pending = 'f-' + Date.now();",
+  "  send({ body, capability, id: pending, type: 'shell:request' });",
+  "};",
+  "const showNames = (names) => {",
+  "  list.textContent = '';",
+  "  names.forEach((name) => {",
+  "    const item = document.createElement('li');",
+  "    item.textContent = name;",
+  "    list.appendChild(item);",
+  "  });",
+  "  out.textContent = names.length + ' files in this app.';",
+  "};",
+  "window.addEventListener('message', (event) => {",
+  "  if (event.source !== parent || !event.data || event.data.protocol !== 1) return;",
+  "  const data = event.data;",
+  "  if (data.type === 'shell:grant' && data.appId === config.appId) {",
+  "    if (config.capabilities.indexOf('shared-read') !== -1) document.getElementById('shared').hidden = false;",
+  "    ask('files', { op: 'list' });",
+  "  } else if (data.type === 'shell:pause') {",
+  "    paused = true;",
+  "    out.textContent = 'Paused.';",
+  "  } else if (data.type === 'shell:resume') {",
+  "    paused = false;",
+  "    ask('files', { op: 'list' });",
+  "  } else if (data.type === 'shell:deny') {",
+  "    out.textContent = 'Not granted.';",
+  "  } else if (data.type === 'shell:result' && data.id === pending) {",
+  "    if (Array.isArray(data.files)) showNames(data.files);",
+  "    else if (typeof data.text === 'string') { textInput.value = data.text; out.textContent = 'Loaded.'; }",
+  "    else if (data.ok) { out.textContent = 'Done.'; ask('files', { op: 'list' }); }",
+  "    else out.textContent = data.error || 'Could not use files.';",
+  "  }",
+  "});",
+  "document.getElementById('save').addEventListener('click', () => ask('files', { name: nameInput.value, op: 'write', text: textInput.value }));",
+  "document.getElementById('load').addEventListener('click', () => ask('files', { name: nameInput.value, op: 'read' }));",
+  "document.getElementById('drop').addEventListener('click', () => ask('files', { name: nameInput.value, op: 'delete' }));",
+  "document.getElementById('shared').addEventListener('click', () => ask('shared-read', { name: 'readme.txt', op: 'read-shared' }));",
+  "send({ appId: config.appId, type: 'shell:ready' });",
+].join("\n");
+
+const filesDocument = (manifest: AppManifest): string => {
+  const config = JSON.stringify({
+    appId: manifest.appId,
+    capabilities: manifest.capabilities,
+    title: manifest.title,
+  }).replaceAll("<", String.raw`\u003c`);
+
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${escapeHtml(manifest.title)}</title><style>
+    body{margin:0;background:#221c16;color:#f4efe6;font:14px/1.45 system-ui,sans-serif}
+    button,input,textarea{font:inherit;color:inherit;background:#14110e;border:1px solid #3a322a;border-radius:8px}
+    button{border-radius:999px;padding:6px 10px}
+    textarea{width:100%;min-height:72px;box-sizing:border-box}
+    ul{padding-left:18px}
+    @media (prefers-reduced-motion: reduce){*{transition:none;animation:none}}
+  </style></head><body>
+    <p id="out">Files in this app.</p>
+    <label>Name <input id="name" value="note.txt"></label>
+    <textarea id="text"></textarea>
+    <p><button id="save" type="button">Save</button> <button id="load" type="button">Load</button> <button id="drop" type="button">Delete</button> <button id="shared" type="button" hidden>Read shared</button></p>
+    <ul id="list"></ul>
+    <script type="application/json" id="config">${config}</script>
+    <script>${FILES_SOURCE}</script>
+  </body></html>`;
+};
+
 export const guestDocument = (manifest: AppManifest): string => {
+  if (manifest.capabilities.includes("files")) return filesDocument(manifest);
+
   const config = JSON.stringify({
     appId: manifest.appId,
     capability: manifest.capabilities[0] ?? "",

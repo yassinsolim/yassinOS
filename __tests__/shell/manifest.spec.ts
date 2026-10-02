@@ -13,6 +13,7 @@ describe("app manifests", () => {
     expect(APP_REGISTRY.map((app) => app.appId)).toEqual([
       "frame-monitor",
       "wasm-bench",
+      "files",
     ]);
     expect(FRAME_MONITOR.entry).toBe("dom");
     expect(WASM_BENCH.entry).toBe("worker");

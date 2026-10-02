@@ -7,3 +7,4 @@ public
 scripts
 test-results
 *.config.js
+jest.setup.js

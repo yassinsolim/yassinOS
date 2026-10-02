@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import { FRAME_MONITOR, WASM_BENCH } from "shell/manifest";
+import { FILES, FRAME_MONITOR, WASM_BENCH } from "shell/manifest";
 import { emptyShell, openProcess } from "shell/model";
 import { guestDocument } from "shell/next/guest";
 import { ROOM_MESSAGE, parseRoomParent } from "shell/protocol";
@@ -130,8 +130,13 @@ describe("sandbox messages", () => {
 
     expect(frameReply).not.toHaveProperty("module");
     expect(guestDocument(WASM_BENCH)).not.toContain("141,243,101");
+    expect(guestDocument(FILES)).not.toContain("141,243,101");
+    expect(guestDocument(FILES)).toContain("prefers-reduced-motion");
     expect(guestDocument(FRAME_MONITOR)).not.toMatch(
       /localStorage|indexedDB|parent\.document|document\.cookie/
+    );
+    expect(guestDocument(FILES)).not.toMatch(
+      /localStorage|indexedDB|FileSystemHandle|parent\.document|document\.cookie/
     );
   });
 });

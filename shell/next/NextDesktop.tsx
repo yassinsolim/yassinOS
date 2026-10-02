@@ -14,13 +14,20 @@ import {
 } from "shell/model";
 import styles from "shell/next/desktop.module.css";
 import { useRoomHandshake } from "shell/next/handshake";
+import { useShellStorage } from "shell/next/useShellStorage";
 import WindowFrame from "shell/next/WindowFrame";
 
 const NextDesktop = (): React.ReactElement => {
   const [shell, setShell] = useState<ShellSnapshot>(emptyShell);
   const [paused, setPaused] = useState(false);
+  const [confirm, setConfirm] = useState<"layout" | "none" | "storage">("none");
   const surface = useRef<HTMLDivElement>(null);
   const focusedId = shell.windows.find((entry) => entry.focused)?.windowId;
+  const { resetLayout, resetStorage, store } = useShellStorage(
+    paused,
+    shell,
+    setShell
+  );
 
   useRoomHandshake(shell, setPaused);
 
@@ -98,6 +105,53 @@ const NextDesktop = (): React.ReactElement => {
         <p className={styles.note}>
           Arrow keys move the focused window. Shift and an arrow key resizes it.
         </p>
+        {confirm === "none" ? (
+          <>
+            <button
+              className={styles.quiet}
+              onClick={() => setConfirm("layout")}
+              type="button"
+            >
+              Reset layout
+            </button>
+            <button
+              className={styles.quiet}
+              onClick={() => setConfirm("storage")}
+              type="button"
+            >
+              Reset storage
+            </button>
+          </>
+        ) : (
+          <>
+            <p className={styles.note}>
+              {confirm === "layout"
+                ? "Clear the saved window layout?"
+                : "Delete shell files and the saved layout?"}
+            </p>
+            <button
+              className={styles.quiet}
+              onClick={() => {
+                const run = confirm === "layout" ? resetLayout : resetStorage;
+
+                setConfirm("none");
+                run().catch(() => {
+                  // the desktop is already clear
+                });
+              }}
+              type="button"
+            >
+              Confirm reset
+            </button>
+            <button
+              className={styles.quiet}
+              onClick={() => setConfirm("none")}
+              type="button"
+            >
+              Cancel
+            </button>
+          </>
+        )}
       </div>
       {shell.windows.length > 0 && (
         <ul className={styles.tasks}>
@@ -148,6 +202,7 @@ const NextDesktop = (): React.ReactElement => {
                 setShell((current) => raiseWindow(current, windowId))
               }
               paused={paused}
+              store={store}
             />,
           ];
         })}

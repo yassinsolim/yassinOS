@@ -1,6 +1,11 @@
 import { MIN_HEIGHT, MIN_WIDTH } from "shell/geometry";
 
-export const CAPABILITIES = ["frame-time", "wasm-bench"] as const;
+export const CAPABILITIES = [
+  "files",
+  "frame-time",
+  "shared-read",
+  "wasm-bench",
+] as const;
 
 export type Capability = (typeof CAPABILITIES)[number];
 
@@ -186,7 +191,21 @@ export const WASM_BENCH: AppManifest = {
   width: 380,
 };
 
-export const APP_REGISTRY: readonly AppManifest[] = [FRAME_MONITOR, WASM_BENCH];
+export const FILES: AppManifest = {
+  appId: "files",
+  capabilities: ["files", "shared-read"],
+  entry: "dom",
+  height: 340,
+  icon: "Fs",
+  title: "Files",
+  width: 420,
+};
+
+export const APP_REGISTRY: readonly AppManifest[] = [
+  FRAME_MONITOR,
+  WASM_BENCH,
+  FILES,
+];
 
 export const manifestById = (appId: string): AppManifest | undefined =>
   APP_REGISTRY.find((app) => app.appId === appId);
