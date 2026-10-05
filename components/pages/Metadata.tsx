@@ -6,7 +6,6 @@ import { useSession } from "contexts/session";
 import desktopIcons from "public/.index/desktopIcons.json";
 import {
   FAVICON_BASE_PATH,
-  HIGH_PRIORITY_ELEMENT,
   ONE_TIME_PASSIVE_EVENT,
   PACKAGE_DATA,
 } from "utils/constants";
@@ -178,7 +177,6 @@ const Metadata: FC = () => {
             }
             rel="preload"
             type={getMimeType(extension)}
-            {...HIGH_PRIORITY_ELEMENT}
           />
         );
       })}

@@ -1,6 +1,10 @@
 import { memo, useCallback, useEffect, useMemo } from "react";
 import StyledPinnedApps from "components/system/Taskbar/PinnedApps/StyledPinnedApps";
 import { useProcesses } from "contexts/process";
+import { getExtension, imageSrc, imageSrcs } from "utils/functions";
+
+// the 16 px icons (32 and 48 for denser screens), not the 256 px originals
+const ICON_SIZE = 16;
 
 const PINNED_APPS = [
   {
@@ -36,7 +40,14 @@ const PinnedApps: FC<{ onChangePinnedCount?: (count: number) => void }> = ({
       {pinned.map(({ icon, id, title }) => (
         <li key={id}>
           <button onClick={handleLaunch(id)} title={title} type="button">
-            <img alt={title} decoding="async" src={icon} />
+            <img
+              alt={title}
+              decoding="async"
+              src={
+                imageSrc(icon, ICON_SIZE, 1, getExtension(icon)).split(" ")[0]
+              }
+              srcSet={imageSrcs(icon, ICON_SIZE, getExtension(icon))}
+            />
           </button>
         </li>
       ))}

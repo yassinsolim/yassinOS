@@ -61,6 +61,23 @@ const nextConfig = {
         },
       ],
     },
+    // icons, the room wallpaper and the favicons change rarely: a repeat visit
+    // shows them from cache and checks for a newer copy in the background,
+    // instead of asking about each one before it can draw
+    ...[
+      "/System/Icons/:path*",
+      "/embed/:path*",
+      "/favicon.ico",
+      "/pfp.png",
+    ].map((source) => ({
+      source,
+      headers: [
+        {
+          key: "Cache-Control",
+          value: "public, max-age=3600, stale-while-revalidate=604800",
+        },
+      ],
+    })),
   ],
   output: "export",
   productionBrowserSourceMaps: false,
