@@ -8,6 +8,7 @@ export const ROOM_MESSAGE = {
   INPUT: "yassinos:input",
   OPEN: "yassinos:open",
   PAUSE: "yassinos:pause",
+  POINTER: "yassinos:pointer",
   READY: "yassinos:ready",
   RESUME: "yassinos:resume",
   SESSION: "yassinos:session",
@@ -18,6 +19,28 @@ export const ROOM_MESSAGE = {
 export const ROOM_HELLO = ROOM_MESSAGE.HELLO;
 
 export type RoomTier = "high" | "low";
+
+// the room's controller drives a pointer over the main screen: where it is,
+// in this frame's css pixels, and what it does there
+export const POINTER_KINDS = [
+  "down",
+  "hide",
+  "menu",
+  "move",
+  "scroll",
+  "up",
+] as const;
+
+export type PointerKind = (typeof POINTER_KINDS)[number];
+
+export type RoomPointer = {
+  dx?: number;
+  dy?: number;
+  kind: PointerKind;
+  type: typeof ROOM_MESSAGE.POINTER;
+  x: number;
+  y: number;
+};
 
 export type EmbedHello = {
   display?: "main";
@@ -31,6 +54,7 @@ export type RoomHello = EmbedHello & { protocol: typeof ROOM_PROTOCOL };
 
 export type RoomParentMessage =
   | EmbedHello
+  | RoomPointer
   | { app: string; type: typeof ROOM_MESSAGE.OPEN; url?: string }
   | { type: typeof ROOM_MESSAGE.PAUSE }
   | { type: typeof ROOM_MESSAGE.RESUME };
@@ -41,6 +65,7 @@ const DEVELOPMENT_ORIGIN =
 const IS_DEVELOPMENT = process.env.NODE_ENV === "development";
 const MAX_APP_LENGTH = 64;
 const MAX_URL_LENGTH = 2048;
+const MAX_POINTER = 16384;
 
 export const isAllowedParentOrigin = (
   origin: string,
@@ -60,6 +85,30 @@ const isSize = (value: unknown): value is [number, number] =>
 
 const isTier = (value: unknown): value is RoomTier =>
   value === "high" || value === "low";
+
+const isPointerKind = (value: unknown): value is PointerKind =>
+  (POINTER_KINDS as readonly unknown[]).includes(value);
+
+const isCoordinate = (value: unknown): value is number =>
+  typeof value === "number" &&
+  Number.isFinite(value) &&
+  Math.abs(value) <= MAX_POINTER;
+
+const acceptPointer = (
+  data: Record<string, unknown>
+): RoomPointer | undefined => {
+  const { dx, dy, kind, x, y } = data;
+
+  if (!isPointerKind(kind) || !isCoordinate(x) || !isCoordinate(y)) {
+    return undefined;
+  }
+
+  if (kind !== "scroll") return { kind, type: ROOM_MESSAGE.POINTER, x, y };
+
+  if (!isCoordinate(dx) || !isCoordinate(dy)) return undefined;
+
+  return { dx, dy, kind, type: ROOM_MESSAGE.POINTER, x, y };
+};
 
 export const acceptEmbedHello = (data: unknown): EmbedHello | undefined => {
   if (!isRecord(data) || data.type !== ROOM_HELLO) return undefined;
@@ -106,6 +155,8 @@ export const parseRoomParent = (
   }
 
   if (type === ROOM_MESSAGE.HELLO) return acceptEmbedHello(data);
+
+  if (type === ROOM_MESSAGE.POINTER) return acceptPointer(data);
 
   if (type === ROOM_MESSAGE.OPEN) {
     const { app, url } = data;

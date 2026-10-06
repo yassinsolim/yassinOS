@@ -106,6 +106,9 @@ describe("parent message types", () => {
     { type: MESSAGE.RESUME },
     { app: "Portfolio", type: MESSAGE.OPEN },
     { app: "PDF", type: MESSAGE.OPEN, url: "/Users/Public/Desktop/Resume.pdf" },
+    { kind: "move", type: MESSAGE.POINTER, x: 120, y: 80.5 },
+    { kind: "down", type: MESSAGE.POINTER, x: 0, y: 0 },
+    { dx: 0, dy: -240, kind: "scroll", type: MESSAGE.POINTER, x: 10, y: 10 },
   ])("accepts %j", (message) =>
     expect(parseParentMessage(message)).toMatchObject(message)
   );
@@ -134,6 +137,14 @@ describe("parent message types", () => {
     { app: 42, type: MESSAGE.OPEN },
     { app: "Portfolio", type: MESSAGE.OPEN, url: 42 },
     { app: "x".repeat(65), type: MESSAGE.OPEN },
+    { type: MESSAGE.POINTER, x: 1, y: 1 },
+    { kind: "drag", type: MESSAGE.POINTER, x: 1, y: 1 },
+    { kind: "move", type: MESSAGE.POINTER, x: "1", y: 1 },
+    { kind: "move", type: MESSAGE.POINTER, x: Number.NaN, y: 1 },
+    { kind: "move", type: MESSAGE.POINTER, x: 1, y: Infinity },
+    { kind: "move", type: MESSAGE.POINTER, x: 1e6, y: 1 },
+    { kind: "scroll", type: MESSAGE.POINTER, x: 1, y: 1 },
+    { dx: 0, dy: "down", kind: "scroll", type: MESSAGE.POINTER, x: 1, y: 1 },
   ])("rejects %j", (message) =>
     expect(parseParentMessage(message)).toBeUndefined()
   );
@@ -142,6 +153,18 @@ describe("parent message types", () => {
     expect(
       parseParentMessage({ ...HELLO, extra: "<script>" })
     ).not.toHaveProperty("extra"));
+
+  test("a pointer that isn't scrolling carries no deltas", () =>
+    expect(
+      parseParentMessage({
+        dx: 5,
+        dy: 5,
+        kind: "move",
+        type: MESSAGE.POINTER,
+        x: 1,
+        y: 1,
+      })
+    ).toEqual({ kind: "move", type: MESSAGE.POINTER, x: 1, y: 1 }));
 });
 
 describe("reading parent messages", () => {

@@ -5,6 +5,7 @@ import { useSession } from "contexts/session";
 import { useProcessesRef } from "hooks/useProcessesRef";
 import { openApp, resolveAppName } from "hooks/useUrlLoader";
 import { isSpanWallpaper, loadSpanWallpaper } from "utils/embed";
+import { handlePadPointer } from "utils/padPointer";
 import {
   EMBED_PROTOCOL,
   MESSAGE,
@@ -121,6 +122,8 @@ const useEmbedBridge = (): void => {
         setHellos((count) => count + 1);
       } else if (message.type === MESSAGE.OPEN) {
         openFromParent(message.app, message.url);
+      } else if (message.type === MESSAGE.POINTER) {
+        handlePadPointer(message);
       } else {
         setParentPaused(message.type === MESSAGE.PAUSE);
       }
