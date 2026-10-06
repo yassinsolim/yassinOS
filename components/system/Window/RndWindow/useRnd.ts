@@ -32,8 +32,15 @@ const useRnd = (id: string): Props => {
   const { setWindowStates } = useSession();
   const [size, setSize] = useResizable(id, autoSizing);
   const [position, setPosition] = useDraggable(id, size);
+  // once it's moving the window gets a layer of its own that the compositor
+  // just moves, rather than it and all it uncovers being repainted every frame
+  const onDrag: DraggableEventHandler = useCallback(
+    (_event, { node }) => node.style.setProperty("will-change", "transform"),
+    []
+  );
   const onDragStop: DraggableEventHandler = useCallback(
-    (_event, { x, y }) => {
+    (_event, { node, x, y }) => {
+      node.style.removeProperty("will-change");
       enableIframeCapture();
 
       const newPosition = { x, y };
@@ -115,6 +122,7 @@ const useRnd = (id: string): Props => {
     disableDragging: maximized,
     enableResizing,
     lockAspectRatio,
+    onDrag,
     onDragStart: disableIframeCapture,
     onDragStop,
     onResizeStart: disableIframeCapture,

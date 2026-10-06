@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { LOW_POWER_CLASS } from "utils/constants";
 
 const StyledSidebar = styled.nav`
   display: flex;
@@ -36,6 +37,14 @@ const StyledSidebar = styled.nav`
       position: absolute;
       width: 100%;
       z-index: -100000;
+    }
+
+    html.${LOW_POWER_CLASS} & {
+      background-color: hsl(0 0% 10% / 95%);
+
+      &::before {
+        backdrop-filter: none;
+      }
     }
   }
 

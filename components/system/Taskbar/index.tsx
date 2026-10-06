@@ -1,4 +1,4 @@
-import { memo, useCallback, useState } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { AnimatePresence } from "motion/react";
 import {
@@ -15,7 +15,11 @@ import StartButton from "components/system/Taskbar/StartButton";
 import StyledTaskbar from "components/system/Taskbar/StyledTaskbar";
 import TaskbarEntries from "components/system/Taskbar/TaskbarEntries";
 import useTaskbarContextMenu from "components/system/Taskbar/useTaskbarContextMenu";
-import { CLOCK_CANVAS_BASE_WIDTH, FOCUSABLE_ELEMENT } from "utils/constants";
+import {
+  CLOCK_CANVAS_BASE_WIDTH,
+  FOCUSABLE_ELEMENT,
+  LOW_POWER_CLASS,
+} from "utils/constants";
 import { useWindowAI } from "hooks/useWindowAI";
 import { useSession } from "contexts/session";
 
@@ -59,6 +63,16 @@ const Taskbar: FC = () => {
     []
   );
   const hasAI = hasWindowAI || aiEnabled;
+
+  useEffect(() => {
+    const { deviceMemory = Infinity, hardwareConcurrency = Infinity } =
+      navigator as Navigator & { deviceMemory?: number };
+
+    // few cores or little memory comes with a weak gpu, see SolidOnLowPower
+    if (hardwareConcurrency <= 4 || deviceMemory <= 4) {
+      document.documentElement.classList.add(LOW_POWER_CLASS);
+    }
+  }, []);
 
   return (
     <>

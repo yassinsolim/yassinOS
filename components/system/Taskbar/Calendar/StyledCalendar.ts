@@ -1,5 +1,6 @@
 import { m as motion } from "motion/react";
 import styled from "styled-components";
+import { SolidOnLowPower } from "components/system/Taskbar/TaskbarPanel";
 import { TASKBAR_HEIGHT } from "utils/constants";
 
 const StyledCalendar = styled(motion.section)`
@@ -12,6 +13,8 @@ const StyledCalendar = styled(motion.section)`
   position: absolute;
   right: 0;
   z-index: 10000;
+
+  ${SolidOnLowPower}
 
   table {
     padding: 4px 10px 19px;

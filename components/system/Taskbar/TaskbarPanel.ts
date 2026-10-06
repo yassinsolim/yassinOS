@@ -1,5 +1,14 @@
 import { type RuleSet, css } from "styled-components";
-import { TASKBAR_HEIGHT } from "utils/constants";
+import { LOW_POWER_CLASS, TASKBAR_HEIGHT } from "utils/constants";
+
+// a backdrop blur has a weak gpu (or chrome's software path) redraw everything
+// behind it every frame, so on a low power device the panels go solid instead
+export const SolidOnLowPower = css`
+  html.${LOW_POWER_CLASS} & {
+    backdrop-filter: none;
+    background-color: hsl(0 0% 13% / 95%);
+  }
+`;
 
 const TaskbarPanel = (
   height: number,
@@ -25,6 +34,8 @@ const TaskbarPanel = (
   @supports ((-webkit-backdrop-filter: none) or (backdrop-filter: none)) {
     background-color: hsl(0 0% 13% / 70%);
   }
+
+  ${SolidOnLowPower}
 `;
 
 export default TaskbarPanel;
