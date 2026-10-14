@@ -161,11 +161,11 @@ const Portfolio: FC<ComponentProcessProps> = ({ id }) => {
     );
   }, []);
 
-  useEffect(() => {
+  // on a narrow window the section links are a row that scrolls sideways:
+  // keep the picked one in view as the reading moves or the window resizes
+  const revealActive = useCallback(() => {
     const nav = navRef.current;
-    const button = nav?.querySelector<HTMLElement>(
-      `[data-section="${active}"]`
-    );
+    const button = nav?.querySelector<HTMLElement>("[aria-current]");
 
     if (!nav || !button || nav.scrollWidth <= nav.clientWidth) return;
 
@@ -178,7 +178,18 @@ const Portfolio: FC<ComponentProcessProps> = ({ id }) => {
         left: nav.scrollLeft + left - view.left - 20,
       });
     }
-  }, [active]);
+  }, []);
+
+  useEffect(revealActive, [/* effect dep */ active, revealActive]);
+
+  useEffect(() => {
+    const nav = navRef.current;
+    const observer = new ResizeObserver(revealActive);
+
+    if (nav) observer.observe(nav);
+
+    return () => observer.disconnect();
+  }, [revealActive]);
 
   return (
     <AppContainer
@@ -240,7 +251,6 @@ const Portfolio: FC<ComponentProcessProps> = ({ id }) => {
                   key={section}
                   aria-current={active === section ? "true" : undefined}
                   className={active === section ? "active" : undefined}
-                  data-section={section}
                   onClick={() => goTo(section)}
                   type="button"
                 >

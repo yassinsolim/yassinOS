@@ -5,8 +5,8 @@ import styled from "styled-components";
 const StyledPortfolio = styled.div`
   --ink: #0c0c0d;
   --body: #2c2c2e;
-  --muted: #6e6e73;
-  --faint: #8e8e93;
+  --muted: #55555a;
+  --faint: #6e6e73;
   --line: rgb(12 12 13 / 9%);
   --line-strong: rgb(12 12 13 / 22%);
   --fill: rgb(12 12 13 / 4.5%);
@@ -21,8 +21,15 @@ const StyledPortfolio = styled.div`
   height: 100%;
   line-height: 1.55;
   overflow: hidden;
-  user-select: text;
   width: 100%;
+
+  /* the desktop turns text selection off everywhere; this text should copy */
+  *,
+  *::before,
+  *::after {
+    cursor: auto;
+    user-select: text;
+  }
 
   h1,
   h2,
