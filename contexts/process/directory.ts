@@ -216,7 +216,7 @@ const directory: Processes = {
   },
   Portfolio: {
     Component: dynamic(() => import("components/apps/Portfolio")),
-    backgroundColor: "#0c1428",
+    backgroundColor: "#fff",
     defaultSize: {
       height: 800,
       width: 1120,

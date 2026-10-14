@@ -1,6 +1,10 @@
 export const contact = {
   email: "solimanyassin@gmail.com",
   github: "https://github.com/yassinsolim",
+  headline: [
+    "AI GPU Software Libraries Intern at AMD",
+    "Software Engineering at the University of Calgary",
+  ],
   linkedin: "https://linkedin.com/in/yassinsoliman",
   location: "Calgary, AB",
   name: "Yassin Soliman",
@@ -8,8 +12,6 @@ export const contact = {
   site: "https://yassin.app",
   summary:
     "Software engineer focused on GPU-accelerated deep learning libraries, neural network performance, and practical systems that connect low-level optimization with product-grade software.",
-  tagline:
-    "AI GPU Software Libraries Intern @ AMD | \n Software Engineering @ University of Calgary",
 };
 
 export const snapshot = {
