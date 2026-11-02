@@ -62,6 +62,7 @@ export const projects = [
   {
     highlights: [
       "Finds songs by how they sound across a 272,853-track catalog, blending learned audio embeddings with a DSP engine measured straight from the waveform. Ships as a web app, an always-on API, a mobile companion, and a Spicetify extension that adds a right-click \u201CFind soundalikes\u201D menu inside Spotify.",
+      "Any-song mode matches any Deezer track, even one outside the catalog, by shared melody, samples or overall sound: unseen songs are embedded live on a homelab RTX 2070 SUPER in about 0.6 s and ranked against 269K indexed tracks, with a fused \u201CBest matches\u201D list on top.",
       "Trained self-supervised audio embeddings on 106K tracks on a local RTX 5080, lifting frozen genre-probe accuracy from 0.25 to 0.641. Raised training GPU utilization from 9% to 99% and measured a 4.2x FP16/channels-last speedup with a custom cuDNN solver inspector.",
       "Extension updates only run after signature, pinned-commit, SHA-256, and integrity checks, falling back to the last verified build, and a cron-scheduled API probe has to pass before any deploy goes out.",
     ],
