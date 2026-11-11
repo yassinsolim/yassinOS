@@ -30,6 +30,9 @@ jobs:
         run: yarn install --frozen-lockfile
         env:
           NODE_OPTIONS: --openssl-legacy-provider
+      # eslint resolves imports of the generated public/.index/*.json files
+      - name: generate index files
+        run: yarn build:prebuild
       - name: eslint
         run: yarn eslint
       - name: stylelint
