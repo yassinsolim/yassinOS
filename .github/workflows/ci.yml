@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      HUSKY: "0"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: yarn
+      # BrowserFS is a git dependency that builds with webpack 4 on install,
+      # which needs the legacy OpenSSL provider on current Node
+      - name: install
+        run: yarn install --frozen-lockfile
+        env:
+          NODE_OPTIONS: --openssl-legacy-provider
+      - name: eslint
+        run: yarn eslint
+      - name: stylelint
+        run: yarn stylelint
+      - name: build
+        run: yarn build

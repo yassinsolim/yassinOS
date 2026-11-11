@@ -56,6 +56,12 @@ npm run start
 
 ---
 
+## Deployment
+
+Every push to `main` is built and published automatically to the self-hosted web server. Response headers, rewrites and URL rules live in `site.json`.
+
+---
+
 ## Docker (Optional)
 
 If your repo includes a Dockerfile, you can build and run locally like this:
