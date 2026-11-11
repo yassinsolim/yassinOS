@@ -56,6 +56,12 @@ npm run start
 
 ---
 
+## Deployment
+
+Every push to `main` is built as a static export and published automatically to the self-hosted web server. A static export can't apply the `headers()` in `next.config.js`, so the server sets the same headers itself. If you change them there, say so in your pull request.
+
+---
+
 ## Docker (Optional)
 
 If your repo includes a Dockerfile, you can build and run locally like this:

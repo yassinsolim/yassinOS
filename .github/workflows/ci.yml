@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: yarn
+      # BrowserFS is a git dependency that yarn still builds with webpack 4
+      # despite --ignore-scripts, which needs the legacy OpenSSL provider
+      - name: install
+        run: yarn install --frozen-lockfile --ignore-scripts
+        env:
+          NODE_OPTIONS: --openssl-legacy-provider
+      # eslint resolves imports of the generated public/.index/*.json files
+      - name: generate index files
+        run: yarn build:prebuild
+      - name: eslint
+        run: yarn eslint
+      - name: stylelint
+        run: yarn stylelint
+      - name: build
+        run: yarn build
