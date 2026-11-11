@@ -58,7 +58,7 @@ npm run start
 
 ## Deployment
 
-Every push to `main` is built and published automatically to the self-hosted web server. Response headers, rewrites and URL rules live in `site.json`.
+Every push to `main` is built as a static export and published automatically to the self-hosted web server. A static export can't apply the `headers()` in `next.config.js`, so the server sets the same headers itself. If you change them there, say so in your pull request.
 
 ---
 
