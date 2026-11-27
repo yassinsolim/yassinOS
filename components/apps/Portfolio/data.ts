@@ -26,6 +26,28 @@ export const snapshot = {
 
 export const projects = [
   {
+    app: "GamePorts",
+    highlights: [
+      "Native ARM64 Android ports of four Xbox 360 games: Call of Duty 4, Modern Warfare 2, Modern Warfare 3 and Advanced Warfare. Not emulation: the console's PowerPC code is translated ahead of time into C++ by a XenonRecomp-based static recompiler and compiled for the device, with a runtime standing in for the console and a Vulkan renderer.",
+      "Measured on every release at about 120 FPS on the AYN Thor (Snapdragon 8 Gen 2, 120 Hz) and 60 FPS on the Retroid Pocket Flip 2 (Snapdragon 865, 60 Hz).",
+      "One self-updating app per game with a guided setup that builds the game on the device from the player's own disc, support for the player's own DLC, and online play through a relay server. No game files are distributed.",
+      "A Nintendo Switch port of Advanced Warfare is in progress.",
+    ],
+    name: "Call of Duty: Android ports",
+    repo: "https://github.com/yassinsolim/mw3-recomp",
+    summary:
+      "Four Xbox 360 Call of Duty games running natively on Android, made by static recompilation.",
+    tech: [
+      "C++",
+      "Kotlin",
+      "Vulkan",
+      "ARM64",
+      "Android NDK",
+      "Static Recompilation",
+    ],
+    timeline: "2026",
+  },
+  {
     highlights: [
       "Real-time neural video upscaler for 720p sources, with an Electron/WebGPU desktop player and an in-progress native macOS player built on Swift, AVFoundation, Core Video, and Metal.",
       "Rewrote the Metal convolution kernels around the GPU's 32 KB threadgroup memory (cooperative halo loads, vector channel groups, output-channel reuse), cutting 720p-to-1440p inference on Apple M5 from 65.9 ms to 3.9 ms p50 (16.8x) with golden-vector parity against the WebGPU path.",

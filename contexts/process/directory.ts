@@ -93,6 +93,16 @@ const directory: Processes = {
     icon: FOLDER_ICON,
     title: "File Explorer",
   },
+  GamePorts: {
+    Component: dynamic(() => import("components/apps/GamePorts")),
+    backgroundColor: "#fff",
+    defaultSize: {
+      height: 800,
+      width: 960,
+    },
+    icon: "/System/Icons/gameports.png",
+    title: "Game Ports",
+  },
   IRC: {
     Component: dynamic(() => import("components/apps/IRC")),
     backgroundColor: "#FFF",

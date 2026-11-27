@@ -314,6 +314,7 @@ const Portfolio: FC<ComponentProcessProps> = ({ id }) => {
               <div className="cards">
                 {projects.map(
                   ({
+                    app,
                     name,
                     timeline,
                     summary,
@@ -342,6 +343,15 @@ const Portfolio: FC<ComponentProcessProps> = ({ id }) => {
                           >
                             {expanded ? "Less" : "Details"}
                           </button>
+                          {app && (
+                            <button
+                              className="text-button"
+                              onClick={() => open(app)}
+                              type="button"
+                            >
+                              Open app
+                            </button>
+                          )}
                           {repo && (
                             <button
                               className="text-button"
