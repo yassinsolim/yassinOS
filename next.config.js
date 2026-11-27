@@ -13,9 +13,9 @@ const webpack = require("webpack");
  * @type {import("next").NextConfig}
  * */
 const nextConfig = {
+  // Extra dev origins (another device on the LAN or tailnet): ALLOWED_DEV_ORIGINS, comma-separated.
   allowedDevOrigins: [
-    "http://100.82.50.78",
-    "http://100.82.50.78:3000",
+    ...(process.env.ALLOWED_DEV_ORIGINS?.split(",").filter(Boolean) ?? []),
     "http://localhost:3000",
     "http://127.0.0.1:3000",
   ],
