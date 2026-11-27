@@ -1,14 +1,12 @@
 export const contact = {
-  email: "solimanyassin@gmail.com",
+  discord: "https://yassin.app/discord",
   github: "https://github.com/yassinsolim",
   headline: [
     "AI GPU Software Libraries Intern at AMD",
-    "Software Engineering at the University of Calgary",
+    "Software Engineering at the Schulich School of Engineering",
   ],
   linkedin: "https://linkedin.com/in/yassinsoliman",
-  location: "Calgary, AB",
   name: "Yassin Soliman",
-  phone: "403-671-2013",
   site: "https://yassin.app",
   summary:
     "Software engineer focused on GPU-accelerated deep learning libraries, neural network performance, and practical systems that connect low-level optimization with product-grade software.",
@@ -16,8 +14,7 @@ export const contact = {
 
 export const snapshot = {
   facts: [
-    { label: "Based in", value: "Calgary, AB" },
-    { label: "Studying", value: "B.Sc. Software Engineering, UCalgary" },
+    { label: "Studying", value: "B.Sc. Software Engineering" },
     { label: "Graduating", value: "April 2028" },
     { label: "Focus", value: "GPU libraries, deep learning, systems" },
   ],
@@ -106,15 +103,15 @@ export const projects = [
   },
   {
     highlights: [
-      "Account-free, privacy-first navigation for Calgary built on OpenStreetMap-derived data, MapLibre, and self-hosted Valhalla and Nominatim, with no tracking accounts and on-device storage for saved places.",
+      "Account-free, privacy-first navigation built on OpenStreetMap-derived data, MapLibre, and self-hosted Valhalla and Nominatim, with no tracking accounts and on-device storage for saved places.",
       "Expo/React Native iOS client backed by a native Swift navigation core handling map matching, rerouting, spoken guidance, arrival hysteresis, and CarPlay. Fixed on-device issues like starved location updates, a stalling position puck, and a route line re-tessellated every animation frame.",
-      "Strict TypeScript pnpm/Turbo monorepo with shared Zod contracts and generated OpenAPI 3.1, a Fastify API, a 17-variant Calgary route regression matrix, simulator journeys in CI, and TestFlight builds from hosted macOS runners.",
+      "Strict TypeScript pnpm/Turbo monorepo with shared Zod contracts and generated OpenAPI 3.1, a Fastify API, a 17-variant route regression matrix, simulator journeys in CI, and TestFlight builds from hosted macOS runners.",
     ],
     name: "NavOSS",
     repo: "https://github.com/yassinsolim/NavOSS",
     site: "https://navoss.yassin.app",
     summary:
-      "Privacy-first, account-free navigation for Calgary, currently in iOS technical beta.",
+      "Privacy-first, account-free navigation, currently in iOS technical beta.",
     tech: [
       "TypeScript",
       "Expo",
@@ -193,7 +190,7 @@ export const projects = [
   {
     highlights: [
       "Personal desktop OS in the browser, built on daedalOS with Next.js, React, and TypeScript, and embedded as the working monitor screen inside the 3D site at yassin.app.",
-      "Custom Portfolio app, project workspaces on the desktop, and a PDF viewer that renders the resume's real, selectable text with clickable links.",
+      "Custom Portfolio app, project workspaces on the desktop, and a PDF viewer that renders real, selectable text with clickable links.",
       "Originally containerized with Docker and self-hosted on a Proxmox VE homelab, now deployed on Vercel.",
     ],
     name: "yassinOS",
@@ -221,7 +218,7 @@ export const projects = [
     repo: "https://github.com/Waybionic/waybionic_ground_station",
     site: "https://waybionic.com",
     summary:
-      "ROS 2 ground station and embedded control for the UCalgary Waybionic robotic surgical arm.",
+      "ROS 2 ground station and embedded control for the Waybionic robotic surgical arm.",
     tech: ["ROS 2", "C++", "Python", "MoveIt", "RViz", "Docker", "Arduino"],
     timeline: "Ongoing",
   },
@@ -274,18 +271,6 @@ export const projects = [
   },
   {
     highlights: [
-      "Community forum for newcomers to Calgary with real-time and private messaging plus a finance tracker.",
-      "Profiles with avatars/bios, posting/liking, search + filters, and JS polling for live updates.",
-      "Django + MySQL backend; JavaScript front-end for chat and dashboards.",
-    ],
-    name: "CalgaryConnect",
-    summary:
-      "Community forum and finance tracker for newcomers settling in Calgary.",
-    tech: ["Django", "JavaScript", "MySQL", "HTML/CSS"],
-    timeline: "CalgaryHacks 2025",
-  },
-  {
-    highlights: [
       "MicroPython on a Pi Pico drives a two-digit NeoPixel 7-segment display showing live stock and weather data.",
       "LCD provides secondary stats; a button toggles between stock and weather modes.",
       "API fetcher normalizes metrics for compact LED rendering.",
@@ -321,7 +306,6 @@ export const experience = [
       "Cut a 225,990-command GPU validation suite 98.2% to 4,096 at full feature coverage (about 50 GPU-days down to 1), and rebuilt an internal dashboard's query path from 483 s to 11 s over 264M rows.",
       "Prototyped hipDNN heuristic plugins for SDPA/attention and convolution regime classification, and built SLURM benchmark orchestration and a Python database viewer across about 10K lines of Python and shell.",
     ],
-    location: "Calgary, AB",
     role: "Software Engineer Intern, AI GPU Software (AGS) Libraries",
     tech: [
       "C++",
@@ -342,18 +326,16 @@ export const experience = [
       "Built a Docker-first dev environment (pinned ROS 2 Jazzy base, non-root Dev Container, multi-stage build/test) that runs in x86-64 and ARM64 GitHub Actions CI with 41 tests and 0 failures.",
       "Added native Apple Silicon development via RoboStack, and wrote the arm's embedded C/C++ motion control on Arduino (1 kHz PID with anti-windup, encoder interrupts, filtered sensor input).",
     ],
-    location: "Calgary, AB",
     role: "Software Lead",
     tech: ["ROS 2", "C++", "Python", "Docker", "GitHub Actions", "Arduino"],
     timeline: "Nov 2024 - Present",
   },
   {
-    company: "Press Start (UCalgary)",
+    company: "Press Start",
     highlights: [
       "Lead embedded software for a new student initiative building custom gaming handhelds.",
       "Planning the OS and driver layer, Bluetooth multiplayer, and touchscreen input, starting with game prototypes like Pong, Brick Breaker, and Snake.",
     ],
-    location: "Calgary, AB",
     role: "Embedded Software Lead",
     tech: ["Embedded C/C++", "Bluetooth", "Touchscreen Input"],
     timeline: "Ongoing",
@@ -366,7 +348,6 @@ export const experience = [
       "Enhanced frontend performance and SEO through web traffic analysis and SSL integration, enabling 50% more users to visit.",
       "Collaborated in Agile workflows with 2 software engineers, refining iterative solutions and communication.",
     ],
-    location: "Calgary, AB",
     role: "Software Engineer",
     tech: ["JavaScript", "HTML", "CSS", "REST APIs", "Agile"],
     timeline: "May 2024 - May 2025",
@@ -377,7 +358,6 @@ export const experience = [
       "Taught core programming and data structures concepts using interactive games and robotics projects, expanding student engagement by 75%.",
       "Guided 160+ students through software development challenges and iteratively refined curriculum based on feedback, boosting coding confidence and troubleshooting skills by 30%.",
     ],
-    location: "Calgary, AB",
     role: "Programming Instructor",
     tech: [
       "Python",
@@ -456,8 +436,7 @@ export const education = {
     "Testing",
   ],
   degree: "Bachelor of Science in Software Engineering",
-  location: "Calgary, AB",
-  school: "Schulich School of Engineering (University of Calgary)",
+  school: "Schulich School of Engineering",
   timeline: "Sept 2023 - April 2028 (expected)",
 };
 

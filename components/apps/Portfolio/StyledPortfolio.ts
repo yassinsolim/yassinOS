@@ -129,12 +129,6 @@ const StyledPortfolio = styled.div`
     }
   }
 
-  .meta {
-    color: var(--faint);
-    font-size: 12px;
-    line-height: 1.6;
-  }
-
   .nav {
     display: flex;
     flex-direction: column;
@@ -426,10 +420,6 @@ const StyledPortfolio = styled.div`
 
     .actions {
       margin-top: 14px;
-    }
-
-    .meta {
-      margin-top: 10px;
     }
 
     .nav {

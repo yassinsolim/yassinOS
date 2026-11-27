@@ -380,7 +380,6 @@ export const LOW_POWER_CLASS = "low-power";
 export const PACKAGE_DATA = {
   alias: "yassinOS",
   author: {
-    email: "solimanyassin@gmail.com",
     name: "Yassin Soliman",
     npub: "npub14hkkmv5pvhv9mtht9cyhxaxax4md0fqgucpsazlvcssmf7vukkdqs8lhc8",
     url: "https://yassin.app",

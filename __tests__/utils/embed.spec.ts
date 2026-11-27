@@ -4,7 +4,6 @@ import {
   ROOM_WALLPAPER,
   SPAN_WALLPAPER,
   isEmbedded,
-  isMainDisplay,
   isSpanWallpaper,
 } from "utils/embed";
 import { DEFAULT_WALLPAPER, TASKBAR_HEIGHT } from "utils/constants";
@@ -55,21 +54,18 @@ describe("embed params", () => {
   test("standalone", () => {
     load("?display=main&wallpaper=span");
     expect(isEmbedded()).toBe(false);
-    expect(isMainDisplay()).toBe(false);
     expect(isSpanWallpaper()).toBe(false);
   });
 
   test("the room's main screen", () => {
     load("?embed=1&display=main&protocol=1&wallpaper=span&quality=low");
     expect(isEmbedded()).toBe(true);
-    expect(isMainDisplay()).toBe(true);
     expect(isSpanWallpaper()).toBe(true);
   });
 
   test("embedded without the room", () => {
     load("?embed=1&quality=high");
     expect(isEmbedded()).toBe(true);
-    expect(isMainDisplay()).toBe(false);
     expect(isSpanWallpaper()).toBe(false);
   });
 });

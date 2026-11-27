@@ -95,7 +95,7 @@ https://os.yassin.app/?embed=1&display=main&protocol=1&wallpaper=span&quality=hi
 | Param            | What it does                                                                                                           |
 | ---------------- | ---------------------------------------------------------------------------------------------------------------------- |
 | `embed=1`        | Embedded mode. The other params only count with it.                                                                    |
-| `display=main`   | The room's main screen. The desktop starts with nothing open, the parent opens apps (`app=` and `url=` still work).    |
+| `display=main`   | The room's main screen. Like any visit, the desktop starts with nothing open: the parent opens apps, or `app=`/`url=`. |
 | `wallpaper=span` | M1's part of the room wallpaper that spans all three screens, whatever the visitor picked. No wallpaper worker starts. |
 | `quality=low`    | An animated wallpaper, if one was picked, at half resolution and 30 fps (`high` is the default).                       |
 | `protocol=1`     | The protocol the parent speaks. Informational: `yassinos:hello` and `yassinos:ready` carry the version that counts.    |

@@ -22,8 +22,6 @@ import AppContainer from "components/system/Apps/AppContainer";
 import { type ComponentProcessProps } from "components/system/Apps/RenderComponent";
 import { useProcesses } from "contexts/process";
 
-const RESUME_PATH = "/Users/Public/Desktop/Resume.pdf";
-
 const SECTIONS = [
   { id: "about", label: "About" },
   { id: "experience", label: "Experience" },
@@ -211,10 +209,10 @@ const Portfolio: FC<ComponentProcessProps> = ({ id }) => {
             <div className="actions">
               <button
                 className="button primary"
-                onClick={() => open("PDF", { url: RESUME_PATH })}
+                onClick={() => openExternal(contact.discord)}
                 type="button"
               >
-                Resume
+                Discord
               </button>
               <button
                 className="button"
@@ -230,21 +228,7 @@ const Portfolio: FC<ComponentProcessProps> = ({ id }) => {
               >
                 LinkedIn
               </button>
-              <button
-                className="button"
-                onClick={() => {
-                  window.location.href = `mailto:${contact.email}`;
-                }}
-                type="button"
-              >
-                Email
-              </button>
             </div>
-            <p className="meta">
-              {contact.location}
-              <br />
-              {contact.email}
-            </p>
             <nav ref={navRef} aria-label="Sections" className="nav">
               {SECTIONS.map(({ id: section, label }) => (
                 <button
@@ -279,14 +263,12 @@ const Portfolio: FC<ComponentProcessProps> = ({ id }) => {
               <h2 className="label">Experience</h2>
               <div className="entries">
                 {experience.map(
-                  ({ role, company, location, timeline, highlights, tech }) => (
+                  ({ role, company, timeline, highlights, tech }) => (
                     <article key={`${company}-${role}`} className="entry">
                       <header className="entry-head">
                         <div>
                           <h3>{role}</h3>
-                          <p className="org">
-                            {company} · {location}
-                          </p>
+                          <p className="org">{company}</p>
                         </div>
                         <span className="date">{timeline}</span>
                       </header>
@@ -432,9 +414,7 @@ const Portfolio: FC<ComponentProcessProps> = ({ id }) => {
                   <header className="entry-head">
                     <div>
                       <h3>{education.school}</h3>
-                      <p className="org">
-                        {education.degree} · {education.location}
-                      </p>
+                      <p className="org">{education.degree}</p>
                     </div>
                     <span className="date">{education.timeline}</span>
                   </header>

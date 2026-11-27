@@ -105,7 +105,7 @@ describe("parent message types", () => {
     { type: MESSAGE.PAUSE },
     { type: MESSAGE.RESUME },
     { app: "Portfolio", type: MESSAGE.OPEN },
-    { app: "PDF", type: MESSAGE.OPEN, url: "/Users/Public/Desktop/Resume.pdf" },
+    { app: "PDF", type: MESSAGE.OPEN, url: "/Users/Public/Desktop/Notes.pdf" },
     { kind: "move", type: MESSAGE.POINTER, x: 120, y: 80.5 },
     { kind: "down", type: MESSAGE.POINTER, x: 0, y: 0 },
     { dx: 0, dy: -240, kind: "scroll", type: MESSAGE.POINTER, x: 10, y: 10 },

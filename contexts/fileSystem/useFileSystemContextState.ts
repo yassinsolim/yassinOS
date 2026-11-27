@@ -817,7 +817,8 @@ const useFileSystemContextState = (): FileSystemContextState => {
     const expectedMtime = get9pModifiedTime(resumePath);
     const expectedSize = get9pSize(resumePath);
 
-    if (expectedMtime <= 0 && expectedSize <= 0) return;
+    // no longer on the site: a copy this browser cached goes too
+    const shipped = expectedMtime > 0 || expectedSize > 0;
 
     writable.stat(
       resumePath,
@@ -833,12 +834,13 @@ const useFileSystemContextState = (): FileSystemContextState => {
               ? stats.mtime.getTime()
               : 0;
         const isStale =
+          !shipped ||
           (expectedMtime > 0 && mtimeMs > 0 && mtimeMs < expectedMtime) ||
           (expectedSize > 0 && stats.size >= 0 && stats.size !== expectedSize);
 
         if (!isStale) return;
 
-        // Drop stale cached copy so the updated resume shows on the desktop.
+        // Drop the cached copy so the desktop shows what the site ships.
         writable.unlink(resumePath, () => updateFolder(DESKTOP_PATH));
       }
     );

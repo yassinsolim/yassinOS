@@ -7,10 +7,6 @@ import { getSearchParam } from "utils/functions";
 export const isEmbedded = (): boolean =>
   typeof window !== "undefined" && getSearchParam("embed") === "1";
 
-// the room's main screen (M1), the only one of its screens yassinOS draws
-export const isMainDisplay = (): boolean =>
-  isEmbedded() && getSearchParam("display") === "main";
-
 // one still image spans the room's three screens, instead of the animated
 // wallpaper
 export const isSpanWallpaper = (): boolean =>

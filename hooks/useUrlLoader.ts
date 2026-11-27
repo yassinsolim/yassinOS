@@ -3,20 +3,12 @@ import { getProcessByFileExtension } from "components/system/Files/FileEntry/fun
 import { useFileSystem } from "contexts/fileSystem";
 import { useProcesses } from "contexts/process";
 import processDirectory from "contexts/process/directory";
-import { isMainDisplay } from "utils/embed";
 import { getExtension, getSearchParam } from "utils/functions";
 
 const isBrowserUrl = (url: string): boolean =>
   url.startsWith("http://") ||
   url.startsWith("https://") ||
   url.startsWith("chrome://");
-
-// the room's main screen starts on a clean desktop, its parent opens apps
-const shouldSkipAutoLaunch = (): boolean =>
-  typeof window !== "undefined" &&
-  (("__E2E_DISABLE_AUTOLAUNCH" in window &&
-    Boolean(window.__E2E_DISABLE_AUTOLAUNCH)) ||
-    isMainDisplay());
 
 // an app name the way ?app= takes it (any case), dialogs excluded
 export const resolveAppName = (app: string): string | undefined =>
@@ -86,29 +78,27 @@ const useUrlLoader = (): void => {
     const isStale = (): boolean =>
       runId !== runIdRef.current || unmountedRef.current;
 
-    const loadInitialApp = async (initialApp?: string): Promise<boolean> => {
-      if (!initialApp) return false;
+    const loadInitialApp = async (initialApp?: string): Promise<void> => {
+      if (!initialApp) return;
 
-      const opened = await openApp(initialApp, url, { exists, open }, isStale);
-
-      if (opened) openedInitialAppRef.current = true;
-
-      return opened;
+      if (await openApp(initialApp, url, { exists, open }, isStale)) {
+        openedInitialAppRef.current = true;
+      }
     };
 
+    // a plain visit opens nothing: the desktop, with the Portfolio on its
+    // icon, the taskbar and the start menu
     const loadUrl = async (): Promise<void> => {
-      let openedApp = false;
-
       if (app) {
-        openedApp = await loadInitialApp(resolveAppName(app));
+        await loadInitialApp(resolveAppName(app));
       } else if (url) {
         if (isBrowserUrl(url)) {
-          openedApp = await loadInitialApp("Browser");
+          await loadInitialApp("Browser");
         } else {
           try {
             const stats = await stat(url);
 
-            openedApp = await loadInitialApp(
+            await loadInitialApp(
               stats.isDirectory()
                 ? "FileExplorer"
                 : getProcessByFileExtension(getExtension(url))
@@ -117,10 +107,6 @@ const useUrlLoader = (): void => {
             // Ignore error resolving url
           }
         }
-      }
-
-      if (!openedApp && !isStale() && !shouldSkipAutoLaunch()) {
-        await loadInitialApp("Portfolio");
       }
     };
 
